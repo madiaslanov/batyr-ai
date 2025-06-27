@@ -125,3 +125,9 @@ nav a{
 body.keyboard-open nav {
     display: none;
 }
+
+@supports (height: 100dvh) {
+    .main-content {
+        height: 100dvh;
+    }
+}
