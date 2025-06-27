@@ -1,0 +1,263 @@
+.genPage{
+    height: 90vh;
+    background-image: url("/generatePage/bg.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+.eclips1, .eclips2, .eclips3 {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: white;
+    border: 0.5px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+
+}
+.activeLine {
+    background: #C2A14D !important;
+}
+
+.active {
+    background-color: #C2A14D !important;
+    color: black;
+    border: 2px solid white;
+}
+.line {
+    position: absolute;
+    height: 1px;
+    width: 50px;
+    background: white;
+}
+
+.eclips {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding-top: 50px;
+}
+
+.eclips1 p, .eclips2 p, .eclips3 p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.span1{
+    position: absolute;
+    width: 100px;
+    height: 1px;
+    background: #FFFFFF;
+    left: 100px;
+
+}
+
+.span2{
+    position: absolute;
+    width: 100px;
+    height: 1px;
+    background: #FFFFFF;
+    right: 100px;
+
+}
+
+.generateContent{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+}
+
+.generateContent p{
+    color: #FF9F00;
+    font-size: 30px;
+    text-shadow: 1px 1px 1px #000000;
+    padding-top: 110px;
+}
+
+.formImage input{
+    background-image: url("/generatePage/icon.png");
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    border: none;
+    background-color: transparent;
+}
+.formImage label img{
+    width: 200px;
+    height: 200px;
+}
+
+
+.formImage p {
+    color: #FFECAA;
+    font-size: 28px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    text-align: center;
+}
+.formImage{
+    padding-top: 100px;
+}
+.errorText {
+    color: #ff4d4f;
+    font-size: 20px;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.4;
+    background-color: rgba(255, 77, 79, 0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 77, 79, 0.4);
+}
+.formImage button {
+    position: fixed;
+    right: 20px;
+    bottom: 180px;
+    background-color: #C2A14D;
+    color: white;
+    font-size: 18px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.sceneForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 100px;
+}
+.navBtn{
+    position: absolute;
+    bottom: 180px;
+    display: flex;
+    gap: 80px;
+}
+.scriptArea {
+    width: 90%;
+    max-width: 500px;
+    height: 200px;
+    padding: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    border: 2px solid #C2A14D;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+    resize: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    outline: none;
+    transition: border 0.3s ease, background 0.3s ease;
+}
+
+.scriptArea::placeholder {
+    color: #cccccc;
+    font-size: 15px;
+    white-space: pre-line;
+}
+
+
+.navBtn button{
+    background-color: #C2A14D;
+    color: white;
+    font-size: 18px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.sceneForm p {
+    color: #FFECAA;
+    font-size: 28px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    text-align: center;
+}
+.sceneForm{
+    margin: 0 20px;
+}
+.formImage button:hover {
+    background-color: #a88f4b;
+    transform: translateY(-2px);
+}
+
+.formImage button:active {
+    background-color: #8c783e;
+    transform: scale(0.98);
+}
+
+.uploadLabel {
+    cursor: pointer;
+    display: inline-block;
+    transition: 0.3s ease;
+}
+
+.previewImage {
+    max-width: 200px;
+    border-radius: 12px;
+    border: 2px solid #ccc;
+    object-fit: cover;
+}
+
+.fileName {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #444;
+}
+
+
+@media (max-width: 480px) {
+    .formImage button {
+        font-size: 16px;
+        padding: 10px 20px;
+        bottom: 140px;
+        right: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .eclips {
+        gap: 70px;
+    }
+
+    .line {
+        width: 200px;
+    }
+
+    .eclips1, .eclips2, .eclips3 {
+        width: 40px;
+        height: 40px;
+    }
+
+    .eclips1 p, .eclips2 p, .eclips3 p {
+        font-size: 24px;
+    }
+}
+
+.formImage{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+
+@media (max-height: 850px) {
+    .navBtn{
+        bottom: calc(100vh - 85vh);
+    }
+}

@@ -1,0 +1,129 @@
+.batyrContent {
+    background-image: url("/homePage/bgSteppe.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    height: calc(100vh - 109px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+
+.description {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 90%;
+    max-width: 500px;
+    border: 2px solid #C8C8C8;
+    background-color: #ADD8E6;
+    margin-top: 60px;
+    border-radius: 20px;
+    padding: 10px 16px;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.description img {
+    width: 32px;
+    height: auto;
+}
+
+.description p {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000000;
+    margin: 0;
+}
+
+
+.holder {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 12px;
+    position: relative;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+
+.batyrModel {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex: 1;
+    width: 100%;
+}
+
+.batyrModel img {
+    width: auto;
+    max-height: 100vh;
+    height: auto;
+    object-fit: contain;
+}
+
+
+
+.settings {
+    display: flex;
+    margin-top: 80px;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+}
+
+.settings img {
+    width: 48px;
+    height: auto;
+}
+
+
+@media (max-width: 480px) {
+    .description {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .description img {
+        width: 28px;
+    }
+
+    .description p {
+        font-size: 14px;
+    }
+
+    .batyrModel img {
+        max-height: 70vh;
+    }
+
+    .settings {
+        margin-top: 60px;
+    }
+
+    .settings img {
+        width: 50px;
+    }
+}
+
+@media (min-height: 850px) {
+    .batyrModel img {
+        height: 80vh;
+        width: auto;
+    }
+    .settings img {
+        width: 60px;
+        height: auto;
+    }
+}
+
+@media (max-height: 850px) {
+    .batyrContent {
+        height: calc(100vh - 80px);
+    }
+}
