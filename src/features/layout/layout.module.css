@@ -18,10 +18,9 @@
     background-color: #BFA75E;
     position: relative;
     width: 100%;
-    padding-bottom: env(safe-area-inset-bottom);
 }
 nav {
-    position: fixed; /* вместо absolute */
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
@@ -31,7 +30,6 @@ nav {
     font-size: 20px;
     z-index: 100;
     height: 109px;
-    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .card p{
@@ -121,4 +119,7 @@ nav a{
 
 .card::after {
     right: 0;
+}
+body.keyboard-open nav {
+    display: none;
 }
