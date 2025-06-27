@@ -1,5 +1,6 @@
 import {Link, Outlet, useLocation} from "react-router-dom";
 import style from "./layout.module.css"
+import {useEffect} from "react";
 
 export default function Layout() {
     const location = useLocation()
