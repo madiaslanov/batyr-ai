@@ -142,7 +142,7 @@
 }
 .navBtn{
     position: absolute;
-    bottom: 180px;
+    top: calc(100% + 10vh);
     display: flex;
     gap: 80px;
 }
@@ -259,6 +259,6 @@
 
 @media (max-height: 850px) {
     .navBtn{
-        bottom: calc(100vh - 85vh);
+        top: calc(100% + 10vh);
     }
 }
