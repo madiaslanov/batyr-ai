@@ -1,23 +1,49 @@
 import './App.css';
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import Layout from "../features/layout/layout.tsx";
 import Batyr from "../components/batyr/batyr.tsx";
 import GenerateComics from "../components/generateComics/generateComics.tsx";
 import Photo from "../components/photo/photo.tsx";
 import { useEffect, useState } from "react";
 
+declare global {
+    interface Window {
+        Telegram: any;
+    }
+}
+
 function App() {
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
+    const navigate = useNavigate();
 
+    // Проверка устройства (мобилка или нет)
     useEffect(() => {
         const checkIsMobile = () => {
             const isMobileUA = /Mobi|Android|iPhone/i.test(navigator.userAgent);
             const isSmallScreen = window.innerWidth < 768;
             return isMobileUA && isSmallScreen;
         };
-
         setIsMobile(checkIsMobile());
     }, []);
+
+    // Telegram WebApp SDK: fullscreen, переход по start-параметру
+    useEffect(() => {
+        const tg = window.Telegram?.WebApp;
+
+        if (tg) {
+            tg.ready();       // сообщаем Telegram, что всё загружено
+            tg.expand();      // 💥 fullscreen
+            tg.setBackgroundColor('#ffffff'); // опционально: устанавливаем фон
+
+            const startParam = tg.initDataUnsafe?.start_param;
+
+            if (startParam === 'generatePhoto') {
+                navigate('/generatePhoto');
+            } else if (startParam === 'generateComics') {
+                navigate('/generateComics');
+            }
+        }
+    }, [navigate]);
 
     if (isMobile === null) return null;
 
