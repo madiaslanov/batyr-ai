@@ -1,30 +1,34 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import style from "./layout.module.css";
 
 export default function Layout() {
     const location = useLocation();
-    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+    const [keyboardOpen, setKeyboardOpen] = useState(false);
 
     useEffect(() => {
-        const threshold = 100;
+        const visualViewport = window.visualViewport;
+
+        if (!visualViewport) return;
 
         const handleResize = () => {
-            const viewport = window.visualViewport;
-            if (!viewport) return;
+            const height = visualViewport.height;
+            const windowHeight = window.innerHeight;
 
-            const isOpen = window.innerHeight - viewport.height > threshold;
-            setIsKeyboardOpen(isOpen);
+            if (typeof height !== "number") return;
+
+            const heightDiff = windowHeight - height;
+            setKeyboardOpen(heightDiff > 150); // клавиатура точно
         };
 
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener("resize", handleResize);
-        }
+        visualViewport.addEventListener("resize", handleResize);
+        visualViewport.addEventListener("scroll", handleResize);
+
+        handleResize();
 
         return () => {
-            if (window.visualViewport) {
-                window.visualViewport.removeEventListener("resize", handleResize);
-            }
+            visualViewport.removeEventListener("resize", handleResize);
+            visualViewport.removeEventListener("scroll", handleResize);
         };
     }, []);
 
@@ -33,9 +37,8 @@ export default function Layout() {
             <div className={style.mainContent}>
                 <Outlet />
             </div>
-
-            {!isKeyboardOpen && (
-                <nav className="bottom-nav">
+            {!keyboardOpen && (
+                <nav>
                     <Link to="/generatePhoto">
                         <div className={`${style.card} ${location.pathname === "/generatePhoto" ? style.active : ""}`}>
                             <img src="/navBar_img/photo.png" alt="" />
