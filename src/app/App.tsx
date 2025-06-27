@@ -1,5 +1,5 @@
-import './App.css';
-import { Route, Routes } from "react-router-dom";
+import './App.css'
+import { Route, Routes, useNavigate } from "react-router-dom";
 import Layout from "../features/layout/layout.tsx";
 import Batyr from "../components/batyr/batyr.tsx";
 import GenerateComics from "../components/generateComics/generateComics.tsx";
@@ -14,6 +14,7 @@ declare global {
 
 function App() {
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const checkIsMobile = () => {
@@ -27,11 +28,15 @@ function App() {
     useEffect(() => {
         const tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.ready();     // обязательно вызвать первым
-            tg.expand();    // открытие на весь экран
-            tg.setBackgroundColor("#ffffff"); // убрать полупрозрачный фон
+            tg.ready();
+            tg.expand();
+            tg.setBackgroundColor("#ffffff");
+
+            const param = tg.initDataUnsafe?.start_param;
+            if (param === "generatePhoto") navigate("/generatePhoto");
+            if (param === "generateComics") navigate("/generateComics");
         }
-    }, []);
+    }, [navigate]);
 
     if (isMobile === null) return null;
 
@@ -45,22 +50,21 @@ function App() {
                 textAlign: 'center',
                 padding: '1rem'
             }}>
-                <div>
-                    <h2>⚠️ Сайт доступен только на мобильных устройствах</h2>
-                    <p>Пожалуйста, откройте сайт на телефоне 📱</p>
-                </div>
+                <h2>📱 Открой с мобильного устройства</h2>
             </div>
         );
     }
 
     return (
-        <Routes>
-            <Route path="/" element={<Layout />}>
-                <Route index element={<Batyr />} />
-                <Route path="generateComics" element={<GenerateComics />} />
-                <Route path="generatePhoto" element={<Photo />} />
-            </Route>
-        </Routes>
+        <div className="app-container">
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<Batyr />} />
+                    <Route path="generateComics" element={<GenerateComics />} />
+                    <Route path="generatePhoto" element={<Photo />} />
+                </Route>
+            </Routes>
+        </div>
     );
 }
 
