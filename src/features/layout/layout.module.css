@@ -1,16 +1,3 @@
-.appContainer {
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.main-content {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 109px;
-}
-
 .card img{
     width: 75px;
     height: 80px;
@@ -57,7 +44,7 @@ nav {
     height: 100vh;
 }
 
-.mainContent {
+.main-content {
     flex: 1;
     overflow-y: auto;
     padding-bottom: 60px;
