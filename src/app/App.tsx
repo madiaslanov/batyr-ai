@@ -1,4 +1,4 @@
-import './App.css'
+import './App.css';
 import { Route, Routes, useNavigate } from "react-router-dom";
 import Layout from "../features/layout/layout.tsx";
 import Batyr from "../components/batyr/batyr.tsx";
@@ -27,14 +27,19 @@ function App() {
 
     useEffect(() => {
         const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            tg.setBackgroundColor("#ffffff");
 
-            const param = tg.initDataUnsafe?.start_param;
-            if (param === "generatePhoto") navigate("/generatePhoto");
-            if (param === "generateComics") navigate("/generateComics");
+        if (tg) {
+            tg.ready();       // сообщаем Telegram, что всё загружено
+            tg.expand();      // 💥 fullscreen
+            tg.setBackgroundColor('#ffffff'); // опционально: устанавливаем фон
+
+            const startParam = tg.initDataUnsafe?.start_param;
+
+            if (startParam === 'generatePhoto') {
+                navigate('/generatePhoto');
+            } else if (startParam === 'generateComics') {
+                navigate('/generateComics');
+            }
         }
     }, [navigate]);
 
@@ -50,21 +55,22 @@ function App() {
                 textAlign: 'center',
                 padding: '1rem'
             }}>
-                <h2>📱 Открой с мобильного устройства</h2>
+                <div>
+                    <h2>⚠️ Сайт доступен только на мобильных устройствах</h2>
+                    <p>Пожалуйста, откройте сайт на телефоне 📱</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="app-container">
-            <Routes>
-                <Route path="/" element={<Layout />}>
-                    <Route index element={<Batyr />} />
-                    <Route path="generateComics" element={<GenerateComics />} />
-                    <Route path="generatePhoto" element={<Photo />} />
-                </Route>
-            </Routes>
-        </div>
+        <Routes>
+            <Route path="/" element={<Layout />}>
+                <Route index element={<Batyr />} />
+                <Route path="generateComics" element={<GenerateComics />} />
+                <Route path="generatePhoto" element={<Photo />} />
+            </Route>
+        </Routes>
     );
 }
 
