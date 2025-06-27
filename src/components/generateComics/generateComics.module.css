@@ -156,7 +156,6 @@
     display: flex;
     justify-content: center;
     gap: 80px;
-    flex-wrap: wrap;
     align-items: center;
     top: calc(100% + 15vh);
 }
@@ -313,6 +312,24 @@
 
 @media (max-height: 850px) {
     .navBtn{
-        top: calc(100% + 18vh);
+        top: calc(100% + 8vh);
+        gap: 50px;
     }
+    .scriptArea{
+        min-width: 270px;
+    }
+    .errorText{
+        font-size: 14px;
+    }
+    .sceneForm{
+        padding-top: 50px;
+    }
+    .previewImage{
+        width: 200px;
+        height: 200px;
+    }
+    .formImage{
+        padding-top: 70px;
+    }
+
 }
