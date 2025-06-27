@@ -4,3 +4,16 @@ body{
     box-sizing:border-box;
     font-family: "Raleway", sans-serif;
 }
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    touch-action: none;
+    overscroll-behavior: none;
+}
+
+#root {
+    height: 100%;
+    overflow: hidden;
+}
