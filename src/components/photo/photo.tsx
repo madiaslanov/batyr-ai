@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "./Photo.module.css";
+import styles from "./photo.module.css";
 
 const Photo = () => {
     const [image, setImage] = useState<string | null>(null);
