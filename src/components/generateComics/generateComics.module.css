@@ -62,7 +62,6 @@
     height: 1px;
     background: #FFFFFF;
     right: 100px;
-
 }
 
 .generateContent{
@@ -105,6 +104,7 @@
 }
 .formImage{
     padding-top: 100px;
+    position: relative;
 }
 .errorText {
     color: #ff4d4f;
@@ -118,38 +118,61 @@
     border-radius: 6px;
     border: 1px solid rgba(255, 77, 79, 0.4);
 }
-.formImage button {
-    position: absolute;
-    right: 20px;
-    bottom: 180px;
+
+.sceneForm {
+    display: flex;
+    height: 338px;
+    flex-direction: column;
+    padding: 100px 20px 0;
+    position: relative;
+    align-items: center;
+}
+
+.btnBase {
     background-color: #C2A14D;
     color: white;
     font-size: 18px;
     padding: 12px 24px;
+    min-width: 140px;
     border: none;
     border-radius: 12px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+.btnBase:hover {
+    background-color: #a88f4b;
+    transform: translateY(-2px);
 }
 
-.sceneForm {
+.btnBase:active {
+    background-color: #8c783e;
+    transform: scale(0.98);
+}
+
+.navBtn {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    flex-wrap: wrap;
+    align-items: center;
+    top: calc(100% + 15vh);
+}
+
+.mainHolder{
+    height: 250px;
+    max-height: 250px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 100px;
     position: relative;
-}
-.navBtn{
-    position: absolute;
-    top: calc(100% + 10vh);
-    display: flex;
-    gap: 80px;
 }
 .scriptArea {
     width: 90%;
-    max-width: 500px;
-    height: 200px;
+    min-width: 330px;
+    min-height: 200px;
     padding: 16px;
     font-size: 16px;
     line-height: 1.5;
@@ -157,7 +180,6 @@
     border-radius: 12px;
     background-color: rgba(255, 255, 255, 0.07);
     color: #ffffff;
-    resize: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     outline: none;
     transition: border 0.3s ease, background 0.3s ease;
@@ -220,6 +242,38 @@
     color: #444;
 }
 
+.sectionTitle {
+    font-size: 28px;
+    font-weight: 600;
+    color: #FFECAA;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.scriptPreview {
+    max-width: 500px;
+    width: 90%;
+    background-color: rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 20px;
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1.6;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    margin-top: 16px;
+    white-space: pre-line;
+    overflow-y: auto;
+}
+
+.previewImage {
+    max-width: 250px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-bottom: 24px;
+}
+
+
 
 @media (max-width: 480px) {
     .formImage button {
@@ -259,6 +313,6 @@
 
 @media (max-height: 850px) {
     .navBtn{
-        top: calc(100% + 10vh);
+        top: calc(100% + 18vh);
     }
 }
