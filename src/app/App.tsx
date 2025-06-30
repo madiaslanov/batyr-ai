@@ -1,10 +1,7 @@
-import './App.css';
-import { Route, Routes, useNavigate } from "react-router-dom";
-import Layout from "../features/layout/layout.tsx";
-import Batyr from "../components/batyr/batyr.tsx";
-import GenerateComics from "../components/generateComics/generateComics.tsx";
-import Photo from "../components/photo/photo.tsx";
-import { useEffect, useState } from "react";
+import {Route, Routes, useNavigate} from "react-router-dom";
+import Layout from "../features/layout/layout";
+import {useEffect, useState} from "react";
+import SwipeRouter from "../features/swiper/swiper.tsx";
 
 declare global {
     interface Window {
@@ -27,14 +24,12 @@ function App() {
 
     useEffect(() => {
         const tg = window.Telegram?.WebApp;
-
         if (tg) {
-            tg.ready();       // сообщаем Telegram, что всё загружено
-            tg.expand();      // 💥 fullscreen
-            tg.setBackgroundColor('#ffffff'); // опционально: устанавливаем фон
+            tg.ready();
+            tg.expand();
+            tg.setBackgroundColor('#ffffff');
 
             const startParam = tg.initDataUnsafe?.start_param;
-
             if (startParam === 'generatePhoto') {
                 navigate('/generatePhoto');
             } else if (startParam === 'generateComics') {
@@ -42,6 +37,8 @@ function App() {
             }
         }
     }, [navigate]);
+
+
 
     if (isMobile === null) return null;
 
@@ -66,9 +63,9 @@ function App() {
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
-                <Route index element={<Batyr />} />
-                <Route path="generateComics" element={<GenerateComics />} />
-                <Route path="generatePhoto" element={<Photo />} />
+                <Route index element={<SwipeRouter key="batyr" />} />
+                <Route path="generatePhoto" element={<SwipeRouter key="photo" />} />
+                <Route path="generateComics" element={<SwipeRouter key="comics" />} />
             </Route>
         </Routes>
     );

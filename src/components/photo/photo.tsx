@@ -38,9 +38,14 @@ const Photo = () => {
                     <div className={styles.preview}>
                         <img src={image} alt="Uploaded" className={styles.image} />
                     </div>
-                    <button className={styles.button} onClick={handleClear}>
-                        Очистить фото
-                    </button>
+                    <div className={styles.buttonGroup}>
+                        <button className={styles.button} onClick={handleClear}>
+                            Очистить фото
+                        </button>
+                        <button className={styles.button} onClick={() => alert("Генерация фото")}>
+                            Сгенерировать фото
+                        </button>
+                    </div>
                 </>
             ) : (
                 <p className={styles.placeholder}>Выберите фото для отображения</p>

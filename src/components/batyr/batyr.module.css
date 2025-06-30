@@ -4,7 +4,7 @@
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    height: calc(100vh - 109px);
+    height: calc(100vh - 100px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -124,6 +124,6 @@
 
 @media (max-height: 850px) {
     .batyrContent {
-        height: calc(100vh - 80px);
+        height: calc(100vh - 73px);
     }
 }

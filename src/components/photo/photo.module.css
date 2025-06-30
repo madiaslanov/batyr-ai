@@ -102,18 +102,22 @@
 }
 
 .button {
-    margin-top: 30px;
     background-color: #C2A14D;
     color: white;
     font-size: 18px;
     padding: 12px 24px;
+    min-width: 160px;
+    height: 48px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
     border: none;
     border-radius: 12px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
 .button:hover {
     background-color: #a88f4b;
     transform: translateY(-2px);
@@ -122,6 +126,13 @@
 .button:active {
     background-color: #8c783e;
     transform: scale(0.98);
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 20px;
+    margin-top: 70px;
+    justify-content: center;
 }
 
 @media (max-width: 480px) {
