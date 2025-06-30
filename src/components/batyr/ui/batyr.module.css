@@ -32,6 +32,7 @@
 .description img {
     width: 32px;
     height: auto;
+    border-radius: 50%;
 }
 
 .description p {
@@ -67,8 +68,6 @@
     max-height: 100vh;
     height: auto;
     object-fit: contain;
-    border-radius: 50%;
-
 }
 
 

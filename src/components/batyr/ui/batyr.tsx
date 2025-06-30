@@ -46,13 +46,6 @@ export const Batyr = ({ onVoice, onTouchStart, onTouchEnd, tgUser, showHint, isL
                     🗣 Сұраңыз: “Абай кім?” немесе “1991 жылы не болды?”
                 </div>
             )}
-
-            {isListening && (
-                <div className={style.listeningIndicator}>
-                    <span className={style.dot} />
-                    <span>Тыңдап жатыр...</span>
-                </div>
-            )}
         </div>
     );
 };
