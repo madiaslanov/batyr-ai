@@ -1,8 +1,10 @@
-import {Route, Routes, useNavigate} from "react-router-dom";
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import Layout from "../features/layout/layout";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import SwipeRouter from "../features/swiper/swiper.tsx";
-import {BatyrContainer} from "../components/batyr/batyrContainer.tsx";
+import ReactGA from "react-ga4";
+
+const TRACKING_ID = "G-2J5SZSQH87";
 
 declare global {
     interface Window {
@@ -13,7 +15,18 @@ declare global {
 function App() {
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
+    // 1. Инициализация Google Analytics
+    useEffect(() => {
+        ReactGA.initialize(TRACKING_ID);
+    }, []);
+
+    useEffect(() => {
+        ReactGA.send({ hitType: "pageview", page: location.pathname });
+    }, [location]);
+
+    // 3. Проверка устройства
     useEffect(() => {
         const checkIsMobile = () => {
             const isMobileUA = /Mobi|Android|iPhone/i.test(navigator.userAgent);
@@ -23,6 +36,7 @@ function App() {
         setIsMobile(checkIsMobile());
     }, []);
 
+    // 4. Работа с Telegram WebApp
     useEffect(() => {
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -38,8 +52,6 @@ function App() {
             }
         }
     }, [navigate]);
-
-
 
     if (isMobile === null) return null;
 

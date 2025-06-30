@@ -2,10 +2,10 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import GenerateComics from "../../components/generateComics/generateComics";
-import Photo from "../../components/photo/photo";
 import SwiperCore from 'swiper';
 import 'swiper/css';
 import {BatyrContainer} from "../../components/batyr/batyrContainer.tsx";
+import PhotoContainer from "../../components/photo/photoContainer.tsx";
 
 const pages = ['/generatePhoto', '/', '/generateComics'];
 
@@ -60,7 +60,7 @@ export default function SwipeRouter() {
             allowTouchMove={true}
             style={{ height: '100%', width: '100%' }}
         >
-            <SwiperSlide style={{ height: '100%' }}><Photo /></SwiperSlide>
+            <SwiperSlide style={{ height: '100%' }}><PhotoContainer /></SwiperSlide>
             <SwiperSlide style={{ height: '100%' }}><BatyrContainer /></SwiperSlide>
             <SwiperSlide style={{ height: '100%' }}><GenerateComics /></SwiperSlide>
         </Swiper>
