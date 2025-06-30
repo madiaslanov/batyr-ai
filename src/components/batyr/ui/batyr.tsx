@@ -11,9 +11,11 @@ interface BatyrProps {
         username?: string;
         photo_url?: string;
     };
+    showHint?: boolean;
+    isListening?: boolean;
 }
 
-export const Batyr = ({ onVoice, onTouchStart, onTouchEnd , tgUser}: BatyrProps) => {
+export const Batyr = ({ onVoice, onTouchStart, onTouchEnd, tgUser, showHint, isListening }: BatyrProps) => {
     return (
         <div
             className={style.batyrContent}
@@ -28,9 +30,6 @@ export const Batyr = ({ onVoice, onTouchStart, onTouchEnd , tgUser}: BatyrProps)
                     />
                     <p>{tgUser?.username || tgUser?.first_name || "Гость"}</p>
                 </div>
-                <div className={style.settings}>
-                    <img src="/homePage/settings.png" alt="Настройки"/>
-                </div>
             </div>
 
             <div className={style.batyrModel}>
@@ -41,6 +40,19 @@ export const Batyr = ({ onVoice, onTouchStart, onTouchEnd , tgUser}: BatyrProps)
                     style={{ cursor: "pointer" }}
                 />
             </div>
+
+            {showHint && (
+                <div className={style.hintBubble}>
+                    🗣 Сұраңыз: “Абай кім?” немесе “1991 жылы не болды?”
+                </div>
+            )}
+
+            {isListening && (
+                <div className={style.listeningIndicator}>
+                    <span className={style.dot} />
+                    <span>Тыңдап жатыр...</span>
+                </div>
+            )}
         </div>
     );
 };
