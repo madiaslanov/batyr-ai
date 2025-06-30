@@ -1,11 +1,11 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import Batyr from "../../components/batyr/batyr";
 import GenerateComics from "../../components/generateComics/generateComics";
 import Photo from "../../components/photo/photo";
 import SwiperCore from 'swiper';
 import 'swiper/css';
+import {BatyrContainer} from "../../components/batyr/batyrContainer.tsx";
 
 const pages = ['/generatePhoto', '/', '/generateComics'];
 
@@ -19,7 +19,7 @@ export default function SwipeRouter() {
     useEffect(() => {
         const index = pages.indexOf(location.pathname);
         if (index !== -1 && swiperRef.current) {
-            swiperRef.current.slideTo(index, 0);
+            swiperRef.current.slideTo(index, 1000);
             swiperRef.current.allowSlidePrev = index > 0;
             swiperRef.current.allowSlideNext = index < pages.length - 1;
             setCurrentIndex(index);
@@ -61,7 +61,7 @@ export default function SwipeRouter() {
             style={{ height: '100%', width: '100%' }}
         >
             <SwiperSlide style={{ height: '100%' }}><Photo /></SwiperSlide>
-            <SwiperSlide style={{ height: '100%' }}><Batyr /></SwiperSlide>
+            <SwiperSlide style={{ height: '100%' }}><BatyrContainer /></SwiperSlide>
             <SwiperSlide style={{ height: '100%' }}><GenerateComics /></SwiperSlide>
         </Swiper>
     );

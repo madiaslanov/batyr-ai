@@ -1,0 +1,9 @@
+export async function postTTS(text: string): Promise<HTMLAudioElement> {
+    const res = await fetch("http://localhost:8000/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+    });
+    const blob = await res.blob();
+    return new Audio(URL.createObjectURL(blob));
+}

@@ -2,6 +2,7 @@ import {Route, Routes, useNavigate} from "react-router-dom";
 import Layout from "../features/layout/layout";
 import {useEffect, useState} from "react";
 import SwipeRouter from "../features/swiper/swiper.tsx";
+import {BatyrContainer} from "../components/batyr/batyrContainer.tsx";
 
 declare global {
     interface Window {
@@ -63,7 +64,7 @@ function App() {
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
-                <Route index element={<SwipeRouter key="batyr" />} />
+                <Route index element={<SwipeRouter key="BatyrContainer" />} />
                 <Route path="generatePhoto" element={<SwipeRouter key="photo" />} />
                 <Route path="generateComics" element={<SwipeRouter key="comics" />} />
             </Route>
