@@ -224,11 +224,17 @@
         margin-top: 50px;
     }
     .resultImage{
-        width: 250px;
-        height: 250px;
+        width: 200px;
+        height: 200px;
     }
-    .tooltip{
+    .tooltipText{
         top: -20px;
         left: -105px;
+    }
+    .button {
+        font-size: 16px;
+        padding: 10px 20px;
+        min-width: 140px;
+        height: 44px;
     }
 }
