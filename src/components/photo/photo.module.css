@@ -223,4 +223,12 @@
     .buttonGroup{
         margin-top: 50px;
     }
+    .resultImage{
+        width: 250px;
+        height: 250px;
+    }
+    .tooltip{
+        top: -20px;
+        left: -105px;
+    }
 }
