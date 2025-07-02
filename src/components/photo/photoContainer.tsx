@@ -172,7 +172,6 @@ const PhotoContainer = () => {
         }
     };
 
-    // ------------------ HANDLERS (Обработчики UI) ------------------
     const handleClear = () => {
         stopPolling();      // Останавливаем любой активный опрос
         clearLocalStorage(); // Очищаем localStorage
