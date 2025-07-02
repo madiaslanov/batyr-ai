@@ -1,7 +1,7 @@
 // /src/api.ts
 
 // Укажите здесь базовый URL вашего API.
-const API_BASE_URL = "https://batyrai.com";
+const API_BASE_URL = "https://api.batyrai.com";
 
 /**
  * Отправляет фото на сервер, чтобы запустить задачу генерации в фоне.
