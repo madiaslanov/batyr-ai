@@ -62,26 +62,33 @@ const Photo = ({
 
             {step === 2 && (
                 <>
-                    <div className={styles.loading}>
-                        {loading && <p>⏳ Генерация изображения...</p>}
+                    {/* --- Область для результата или загрузки --- */}
+                    <div className={styles.resultContainer}> {/* Используем общий контейнер */}
+                        {loading && (
+                            <div className={styles.loadingIndicator}>
+                                <p className={styles.loading}>⏳ Генерация изображения...</p>
+
+                            </div>
+                        )}
+
                         {!loading && resultUrl && (
-                            <>
-                                <p>✅ Изображение готово</p>
+                            <div className={styles.resultContent}>
+                                <p className={styles.loading}>✅ Изображение готово</p>
                                 <img src={resultUrl} alt="Результат" className={styles.resultImage}/>
-                            </>
+                            </div>
                         )}
                     </div>
 
                     <div className={styles.buttonGroup}>
-                        {resultUrl && (
-                            <div className={styles.buttonGroup}>
+                        {!loading && resultUrl && (
+                            <>
                                 <button className={styles.button} onClick={onDownload}>
                                     ⬇️ Скачать
                                 </button>
                                 <button className={styles.button} onClick={onClear}>
                                     Загрузить другое
                                 </button>
-                            </div>
+                            </>
                         )}
                     </div>
                 </>
