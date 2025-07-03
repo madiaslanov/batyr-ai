@@ -24,28 +24,28 @@ nav {
     bottom: 0;
     left: 0;
     right: 0;
-    background: #ffffff; /* У вас здесь может быть другой фон, это не важно */
+    background: #ffffff; /* У вас здесь ваш #BFA75E */
     display: flex;
-    align-items: center;
+    align-items: center; /* Это выравнивает иконки по центру по вертикали */
     font-size: 20px;
     z-index: 100;
 
-    /* --- ✅ ГЛАВНЫЕ ИЗМЕНЕНИЯ ЗДЕСЬ --- */
+    /* --- ✅ НОВАЯ, ПРАВИЛЬНАЯ ЛОГИКА --- */
 
-    /* Устанавливаем базовую высоту без учета отступа */
+    /* 1. Задаем базовую высоту для контента (кнопок) */
     height: 109px;
 
     /*
-      Добавляем внутренний отступ снизу, равный высоте "небезопасной зоны".
-      На iPhone он добавит ~34px, на других устройствах - 0px.
+      2. Добавляем внутренний отступ снизу. Он "приподнимет"
+         содержимое nav-бара, но сам nav-бар останется прижатым к низу.
     */
     padding-bottom: env(safe-area-inset-bottom);
 
     /*
-      Это важно, чтобы padding не "съел" высоту контента.
-      Мы говорим, что высота 109px относится только к контенту.
+      3. Убедимся, что box-sizing стандартный. Это не обязательно,
+         но для ясности лучше указать.
     */
-    box-sizing: content-box;
+    box-sizing: border-box;
 }
 
 
@@ -65,11 +65,8 @@ nav {
     flex: 1;
     overflow-y: auto;
 
-    /*
-      ✅ ИЗМЕНЕНО: Отступ теперь тоже динамический.
-      Он равен высоте вашего nav-бара (109px) плюс высота небезопасной зоны.
-    */
-    padding-bottom: calc(109px + env(safe-area-inset-bottom));
+    /* ✅ Отступ равен ТОЛЬКО высоте видимой части бара */
+    padding-bottom: 109px;
 }
 
 .active p{
@@ -98,9 +95,8 @@ nav a{
 @media (max-height: 850px) {
     nav {
         height: 80px;
-        /* И здесь тоже добавляем padding */
         padding-bottom: env(safe-area-inset-bottom);
-        box-sizing: content-box;
+        box-sizing: border-box; /* Убедимся, что здесь тоже border-box */
     }
 
     .card {
@@ -122,8 +118,7 @@ nav a{
     }
 
     .main-content {
-        /* И здесь тоже обновляем padding */
-        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        padding-bottom: 80px;
     }
 }
 
