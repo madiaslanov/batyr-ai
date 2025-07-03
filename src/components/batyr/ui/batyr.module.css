@@ -102,6 +102,141 @@
     animation: fadeInUp 0.3s ease-out;
 }
 
+
+/* batyr.module.css */
+
+.soundWave {
+    display: none; /* Прячем визуализацию волны */
+}
+
+.statusIndicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* Чтобы не мешал клику по батыру */
+}
+
+.batyrModel:hover .statusIndicator,
+.statusIndicator.recording,
+.statusIndicator.processing {
+    opacity: 1;
+}
+
+.statusIndicator.recording {
+    background-color: rgba(255, 77, 79, 0.7);
+    animation: pulse 1.5s infinite;
+}
+
+.statusIndicator.processing {
+    background-color: rgba(60, 84, 153, 0.7);
+    animation: spin 2s linear infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(255, 77, 79, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0); }
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Добавьте это в конец вашего файла batyr.module.css */
+
+/* Подсказка для онбординга */
+.onboardingTooltip {
+    position: absolute;
+    bottom: calc(100% + 10px); /* Располагаем над моделью Батыра */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 12px;
+    text-align: center;
+    width: max-content;
+    max-width: 250px;
+    z-index: 10;
+    pointer-events: none; /* Чтобы не мешала клику */
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.onboardingTooltip p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.onboardingTooltip span {
+    display: block;
+    font-size: 20px;
+    margin-top: 5px;
+}
+
+/* Пульсирующий индикатор */
+.pulseIndicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border: 3px solid rgba(0, 122, 255, 0.7);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7);
+    z-index: -1; /* Чтобы был позади картинки */
+}
+
+/* Анимации */
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7);
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.1);
+        box-shadow: 0 0 0 15px rgba(0, 122, 255, 0);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 122, 255, 0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* Дополнительные стили для batyrModel, чтобы индикатор был внутри */
+.batyrModel {
+    position: relative; /* Обязательно для позиционирования дочерних элементов */
+    cursor: pointer;
+    /* ... другие ваши стили для .batyrModel ... */
+}
+
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
