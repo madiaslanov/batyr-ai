@@ -1,20 +1,9 @@
-.genPage {
-    /*
-      ✅ ЗАМЕНЯЕМ ЭТУ СТРОКУ:
-      height: 100vh;
-    */
-
-    /* ✅ НА ЭТИ ДВЕ: */
-    height: 100%;
-    min-height: 100vh; /* Можно использовать и более новые единицы, см. ниже */
-
-    /* Все остальные ваши стили остаются без изменений */
+.genPage{
+    min-height: 100svh;
     background-image: url("/generatePage/bg.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
-    display: flex; /* Рекомендуется добавить для лучшего контроля */
-    flex-direction: column; /* Рекомендуется добавить */
 }
 
 .eclips1, .eclips2, .eclips3 {
