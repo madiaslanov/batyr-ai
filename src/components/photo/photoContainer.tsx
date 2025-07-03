@@ -1,5 +1,6 @@
 // PhotoContainer.tsx
-import { useEffect, useRef } from "react";
+// ✅ Импортируем 'useState' для отслеживания состояния скачивания
+import { useEffect, useRef, useState } from "react";
 import { useBatyrStore } from "./module/useBatyrStore.ts";
 import { getTaskStatus, startFaceSwapTask } from "./api";
 import Photo from "./ui/photo.tsx";
@@ -17,6 +18,9 @@ const PhotoContainer = () => {
         clearAll,
         isPolling, setIsPolling,
     } = useBatyrStore();
+
+    // ✅ Добавляем состояние, чтобы знать, идет ли сейчас скачивание
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const pollingStartTimeRef = useRef<number | null>(null);
@@ -84,30 +88,16 @@ const PhotoContainer = () => {
         console.log("🛑 Опрос остановлен.");
     };
 
-    // ------------------ INIT (При загрузке страницы) ------------------
-    // ✅ ИЗМЕНЕНО: Вся логика инициализации теперь обернута проверкой Telegram Web App
     useEffect(() => {
         // @ts-ignore
         const tg = window.Telegram?.WebApp;
-
         if (!tg) {
-            console.error("Окружение Telegram Web App не найдено! Запуск в обычном браузере.");
-            // Можно оставить возможность работать в браузере без данных телеграм для отладки,
-            // но на реальном устройстве `tg` должен быть всегда.
-            // alert("Ошибка: приложение должно быть запущено внутри Telegram.");
+            console.error("Окружение Telegram Web App не найдено!");
             return;
         }
-
-        // Говорим Telegram, что наше приложение готово к отображению и взаимодействию.
-        // Это важный шаг для стабильной работы на всех платформах.
         tg.ready();
 
-        // Также можно настроить кнопку "Назад", если нужно
-        // tg.BackButton.show();
-        // tg.onEvent('backButtonClicked', handleClear);
-
         console.log("✅ Telegram Web App готово. Запускаем инициализацию состояния.");
-
         const storedJobId = localStorage.getItem("batyr_job_id");
         const storedResultUrl = localStorage.getItem("batyr_result_url");
         const storedPreview = localStorage.getItem("batyr_preview");
@@ -134,28 +124,19 @@ const PhotoContainer = () => {
         console.log("Новая сессия, состояние чистое.");
         handleClear();
 
-        return () => {
-            stopPolling();
-            // if (tg) {
-            //     tg.offEvent('backButtonClicked', handleClear);
-            // }
-        };
-    }, []); // Пустой массив зависимостей = запуск только один раз при монтировании
+        return () => stopPolling();
+    }, []);
 
-    // ------------------ GENERATE (Запуск новой генерации) ------------------
     const handleNext = async () => {
         if (!userPhoto || loading) return;
-
         setStep(2);
         setLoading(true);
         setResultUrl(null);
         clearLocalStorage();
-
         try {
             console.log("🚀 Запускаем задачу на бэкенде...");
             const data = await startFaceSwapTask(userPhoto);
             const newJobId = data.job_id;
-
             if (newJobId) {
                 setJobId(newJobId);
                 localStorage.setItem("batyr_job_id", newJobId);
@@ -170,7 +151,6 @@ const PhotoContainer = () => {
             }
         } catch (err) {
             console.error("🔥 Критическая ошибка при запуске задачи:", err);
-            // Здесь теперь будет корректно отображаться ошибка из `api.ts`
             const errorMessage = (err as Error)?.message || "Произошла неизвестная ошибка.";
             alert(`Не удалось отправить фото: ${errorMessage}`);
             handleClear();
@@ -193,14 +173,43 @@ const PhotoContainer = () => {
         }
     };
 
-    const downloadImage = () => {
-        if (!resultUrl) return;
-        const link = document.createElement("a");
-        link.href = resultUrl;
-        link.download = "batyr-result.jpg";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // ✅ ИЗМЕНЕНО: Новая, улучшенная функция для скачивания файла
+    const downloadImage = async () => {
+        if (!resultUrl || isDownloading) return;
+
+        setIsDownloading(true);
+
+        try {
+            // Скачиваем данные изображения в память
+            const response = await fetch(resultUrl);
+            if (!response.ok) {
+                throw new Error(`Ошибка сети при загрузке изображения: ${response.status}`);
+            }
+
+            // Создаем бинарный объект (Blob)
+            const imageBlob = await response.blob();
+
+            // Создаем временную локальную ссылку на этот объект
+            const localUrl = URL.createObjectURL(imageBlob);
+
+            // Создаем невидимый элемент <a> для скачивания
+            const link = document.createElement("a");
+            link.href = localUrl;
+            link.download = "batyr-result.jpg"; // Имя файла по умолчанию
+            document.body.appendChild(link);
+            link.click(); // Инициируем скачивание
+            document.body.removeChild(link); // Убираем элемент со страницы
+
+            // Освобождаем память, удаляя временную ссылку
+            URL.revokeObjectURL(localUrl);
+
+        } catch (error) {
+            console.error("Ошибка при скачивании файла:", error);
+            alert(`Не удалось скачать файл: ${(error as Error).message}`);
+        } finally {
+            // В любом случае (успех или ошибка) убираем состояние загрузки
+            setIsDownloading(false);
+        }
     };
 
     return (
@@ -214,6 +223,8 @@ const PhotoContainer = () => {
             onClear={handleClear}
             onFileChange={handleFileChange}
             onDownload={downloadImage}
+            // ✅ Передаем новое состояние в UI, чтобы кнопка могла его использовать
+            isDownloading={isDownloading}
         />
     );
 };

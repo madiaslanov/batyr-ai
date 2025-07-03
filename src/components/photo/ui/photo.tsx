@@ -1,11 +1,13 @@
 import styles from "../photo.module.css";
 
+// ✅ 1. Добавляем новый пропс в тип
 type PhotoUIProps = {
     step: 1 | 2;
     userPhoto: File | null;
     preview: string | null;
     resultUrl: string | null;
     loading: boolean;
+    isDownloading: boolean; // Новый пропс для состояния скачивания
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onClear: () => void;
     onNext: () => void;
@@ -18,6 +20,7 @@ const Photo = ({
                    preview,
                    resultUrl,
                    loading,
+                   isDownloading, // ✅ 2. Принимаем новый пропс здесь
                    onFileChange,
                    onClear,
                    onNext,
@@ -62,12 +65,10 @@ const Photo = ({
 
             {step === 2 && (
                 <>
-                    {/* --- Область для результата или загрузки --- */}
-                    <div className={styles.resultContainer}> {/* Используем общий контейнер */}
+                    <div className={styles.resultContainer}>
                         {loading && (
                             <div className={styles.loadingIndicator}>
                                 <p className={styles.loading}>⏳ Генерация изображения...</p>
-
                             </div>
                         )}
 
@@ -82,9 +83,15 @@ const Photo = ({
                     <div className={styles.buttonGroup}>
                         {!loading && resultUrl && (
                             <>
-                                <button className={styles.button} onClick={onDownload}>
-                                    ⬇️ Скачать
+                                {/* ✅ 3. Модифицируем кнопку скачивания */}
+                                <button
+                                    className={styles.button}
+                                    onClick={onDownload}
+                                    disabled={isDownloading} // Кнопка неактивна во время скачивания
+                                >
+                                    {isDownloading ? '⏳ Скачивание...' : '⬇️ Скачать'}
                                 </button>
+
                                 <button className={styles.button} onClick={onClear}>
                                     Загрузить другое
                                 </button>
