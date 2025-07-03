@@ -333,9 +333,3 @@
     }
 
 }
-
-@media (max-height: 600px) {
-    .genPage{
-        height: 100%;
-    }
-}
