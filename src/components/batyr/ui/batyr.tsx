@@ -74,7 +74,7 @@ export const Batyr = ({
                     </div>
 
                     <img
-                        src="/homePage/Hero.png"
+                        src="/homePage/batyr.png"
                         alt="Герой"
                     />
                 </div>

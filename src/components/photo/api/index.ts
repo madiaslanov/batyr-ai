@@ -2,6 +2,9 @@
 
 const API_BASE_URL = "https://api.batyrai.com";
 
+// Получаем API ключ из переменных окружения Vite
+const API_KEY = import.meta.env.VITE_API_SECRET_KEY || '';
+
 /**
  * Отправляет фото на сервер для начала генерации.
  */
@@ -17,6 +20,10 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
     }
 
     const headers = new Headers();
+    // ✅ Добавляем API ключ
+    headers.append('X-API-Key', API_KEY);
+
+    // Добавляем остальные заголовки
     headers.append('X-Telegram-User-Id', String(tgUser.id));
 
     const encodeHeader = (str: string) => {
@@ -55,7 +62,13 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
  */
 export const getTaskStatus = async (jobId: string): Promise<any> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/task-status/${jobId}`);
+        const headers = new Headers();
+        // ✅ Добавляем API ключ
+        headers.append('X-API-Key', API_KEY);
+
+        const response = await fetch(`${API_BASE_URL}/api/task-status/${jobId}`, {
+            headers: headers
+        });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: "Задача не найдена или произошла ошибка." }));
@@ -70,7 +83,6 @@ export const getTaskStatus = async (jobId: string): Promise<any> => {
 };
 
 /**
- * ✅ НОВАЯ ФУНКЦИЯ
  * Отправляет запрос на бэкенд, чтобы тот прислал готовое фото в чат с ботом.
  * @param imageUrl - URL готового изображения.
  */
@@ -83,6 +95,10 @@ export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: strin
     }
 
     const headers = new Headers();
+    // ✅ Добавляем API ключ
+    headers.append('X-API-Key', API_KEY);
+
+    // Добавляем остальные заголовки
     headers.append('Content-Type', 'application/json');
     headers.append('X-Telegram-User-Id', String(tgUser.id));
 

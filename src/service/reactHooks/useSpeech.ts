@@ -38,6 +38,9 @@ const sendAudioToServer = async (
     const response = await fetch("https://api.batyrai.com/api/ask-assistant", {
         method: "POST",
         body: formData,
+        headers: {
+            'X-API-Key': import.meta.env.VITE_API_SECRET_KEY || ''
+        }
     });
 
     if (!response.ok) {
