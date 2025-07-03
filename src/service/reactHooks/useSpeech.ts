@@ -26,17 +26,13 @@ const base64ToBlob = (base64: string, mimeType: string = 'audio/mpeg'): Blob => 
 };
 
 
-// ✅ ИЗМЕНЕННАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ ДАННЫХ НА СЕРВЕР
 const sendAudioToServer = async (
     audioBlob: Blob,
     history: ChatMessage[],
-    // Добавляем filename как аргумент
     filename: string
 ): Promise<ServerResponse> => {
     const formData = new FormData();
-    // Используем динамическое имя файла
     formData.append("audio_file", audioBlob, filename);
-    // Добавляем историю чата в запрос
     formData.append("history_json", JSON.stringify(history));
 
     const response = await fetch("https://api.batyrai.com/api/ask-assistant", {
@@ -45,28 +41,25 @@ const sendAudioToServer = async (
     });
 
     if (!response.ok) {
-        // Попытаемся получить текст ошибки из JSON
         const errorData = await response.json().catch(() => ({ detail: "Сервер вернул ошибку без текста" }));
         throw new Error(errorData.detail || 'Неизвестная ошибка сервера');
     }
 
-    // Ожидаем в ответ JSON, а не просто аудио
     const data: ServerResponse = await response.json();
     return data;
 };
 
 
-// --- ✅ ПОЛНОСТЬЮ ПЕРЕРАБОТАННЫЙ ХУК useSpeech ---
+// --- Хук useSpeech ---
 
 interface UseSpeechReturn {
     isRecording: boolean;
     isProcessing: boolean;
-    history: ChatMessage[]; // Теперь хук возвращает историю
+    history: ChatMessage[];
     toggleRecording: () => void;
-    clearHistory: () => void; // Добавили функцию для очистки истории
+    clearHistory: () => void;
 }
 
-// Хук теперь принимает не просто коллбэк, а объект с коллбэками
 interface UseSpeechProps {
     onNewAnswer: (audioUrl: string) => void;
     onError: (message: string) => void;
@@ -75,12 +68,10 @@ interface UseSpeechProps {
 export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechReturn => {
     const [isRecording, setIsRecording] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
-    // ✅ Состояние для хранения истории диалога
     const [history, setHistory] = useState<ChatMessage[]>([]);
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
-    // Реф для хранения выбранного MIME-типа и имени файла
     const recordingInfoRef = useRef({ mimeType: '', filename: '' });
 
 
@@ -93,29 +84,34 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
     const startRecording = useCallback(() => {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
-                // --- ⭐ УЛУЧШЕНИЕ: Выбор лучшего поддерживаемого MIME-типа ---
+                // --- ⭐ ГЛАВНОЕ ИЗМЕНЕНИЕ ЗДЕСЬ ⭐ ---
+                // Добавляем 'audio/mp4' для поддержки Safari / iOS
                 const mimeTypes = [
-                    'audio/webm;codecs=opus', // Наиболее предпочтительный
-                    'audio/ogg;codecs=opus',
-                    'audio/webm', // Фоллбэк
+                    'audio/webm;codecs=opus', // Предпочтительный для Chrome/Android
+                    'audio/ogg;codecs=opus',  // Предпочтительный для Firefox
+                    'audio/mp4',              // Фоллбэк для Safari/iOS
+                    'audio/webm',             // Общий фоллбэк
                 ];
                 const supportedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
 
+                // Если ни один формат не поддерживается, выдаем ошибку
                 if (!supportedMimeType) {
                     onError("Ваш браузер не может записывать аудио в подходящем формате.");
                     return;
                 }
 
-                // Логируем для отладки
                 console.log(`Using supported MIME type: ${supportedMimeType}`);
 
-                // Определяем расширение файла для отправки на сервер
-                const fileExtension = supportedMimeType.includes('ogg') ? 'ogg' : 'webm';
+                // ⭐ Улучшаем логику определения расширения файла
+                let fileExtension = 'webm';
+                if (supportedMimeType.includes('ogg')) fileExtension = 'ogg';
+                if (supportedMimeType.includes('mp4')) fileExtension = 'mp4';
+
                 recordingInfoRef.current = {
                     mimeType: supportedMimeType,
                     filename: `user_voice.${fileExtension}`
                 };
-                // --- ⭐ КОНЕЦ УЛУЧШЕНИЯ ---
+                // --- ⭐ КОНЕЦ ИЗМЕНЕНИЙ ---
 
                 const mediaRecorder = new MediaRecorder(stream, { mimeType: supportedMimeType });
                 mediaRecorderRef.current = mediaRecorder;
@@ -125,34 +121,30 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
                     audioChunksRef.current.push(event.data);
                 };
 
-                // ✅ Главная логика после остановки записи
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunksRef.current, { type: recordingInfoRef.current.mimeType });
                     stream.getTracks().forEach(track => track.stop());
 
-                    if (audioBlob.size < 1000) { // Проверка на пустую запись
+                    if (audioBlob.size < 1000) {
                         console.log("Запись слишком короткая, игнорируем.");
-                        setIsRecording(false); // Убедимся, что состояние сброшено
+                        setIsRecording(false);
                         return;
                     }
 
                     setIsProcessing(true);
                     try {
-                        // Вызываем новую функцию, передавая ей текущую историю и имя файла
                         const { userText, assistantText, audioBase64 } = await sendAudioToServer(
                             audioBlob,
                             history,
                             recordingInfoRef.current.filename
                         );
 
-                        // Обновляем историю чата новыми сообщениями
                         setHistory(prevHistory => [
                             ...prevHistory,
                             { role: 'user', content: userText },
                             { role: 'assistant', content: assistantText },
                         ]);
 
-                        // Воспроизводим аудио
                         const answerAudioBlob = base64ToBlob(audioBase64);
                         const audioUrl = URL.createObjectURL(answerAudioBlob);
                         onNewAnswer(audioUrl);
@@ -172,7 +164,7 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
                 console.error("Ошибка доступа к микрофону:", err);
                 onError("Пожалуйста, разрешите доступ к микрофону.");
             });
-    }, [history, onNewAnswer, onError]); // Добавляем history в зависимости
+    }, [history, onNewAnswer, onError]);
 
     const toggleRecording = useCallback(() => {
         if (isRecording) {
@@ -183,7 +175,6 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
         }
     }, [isRecording, startRecording, stopRecordingAndProcess]);
 
-    // ✅ Функция для очистки истории
     const clearHistory = useCallback(() => {
         setHistory([]);
     }, []);
