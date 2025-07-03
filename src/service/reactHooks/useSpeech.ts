@@ -29,10 +29,13 @@ const base64ToBlob = (base64: string, mimeType: string = 'audio/mpeg'): Blob => 
 // ✅ ИЗМЕНЕННАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ ДАННЫХ НА СЕРВЕР
 const sendAudioToServer = async (
     audioBlob: Blob,
-    history: ChatMessage[]
+    history: ChatMessage[],
+    // Добавляем filename как аргумент
+    filename: string
 ): Promise<ServerResponse> => {
     const formData = new FormData();
-    formData.append("audio_file", audioBlob, "user_voice.webm");
+    // Используем динамическое имя файла
+    formData.append("audio_file", audioBlob, filename);
     // Добавляем историю чата в запрос
     formData.append("history_json", JSON.stringify(history));
 
@@ -77,6 +80,9 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
+    // Реф для хранения выбранного MIME-типа и имени файла
+    const recordingInfoRef = useRef({ mimeType: '', filename: '' });
+
 
     const stopRecordingAndProcess = useCallback(async () => {
         if (mediaRecorderRef.current?.state === "recording") {
@@ -87,7 +93,31 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
     const startRecording = useCallback(() => {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
-                const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                // --- ⭐ УЛУЧШЕНИЕ: Выбор лучшего поддерживаемого MIME-типа ---
+                const mimeTypes = [
+                    'audio/webm;codecs=opus', // Наиболее предпочтительный
+                    'audio/ogg;codecs=opus',
+                    'audio/webm', // Фоллбэк
+                ];
+                const supportedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
+
+                if (!supportedMimeType) {
+                    onError("Ваш браузер не может записывать аудио в подходящем формате.");
+                    return;
+                }
+
+                // Логируем для отладки
+                console.log(`Using supported MIME type: ${supportedMimeType}`);
+
+                // Определяем расширение файла для отправки на сервер
+                const fileExtension = supportedMimeType.includes('ogg') ? 'ogg' : 'webm';
+                recordingInfoRef.current = {
+                    mimeType: supportedMimeType,
+                    filename: `user_voice.${fileExtension}`
+                };
+                // --- ⭐ КОНЕЦ УЛУЧШЕНИЯ ---
+
+                const mediaRecorder = new MediaRecorder(stream, { mimeType: supportedMimeType });
                 mediaRecorderRef.current = mediaRecorder;
                 audioChunksRef.current = [];
 
@@ -97,18 +127,23 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
 
                 // ✅ Главная логика после остановки записи
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                    const audioBlob = new Blob(audioChunksRef.current, { type: recordingInfoRef.current.mimeType });
                     stream.getTracks().forEach(track => track.stop());
 
                     if (audioBlob.size < 1000) { // Проверка на пустую запись
                         console.log("Запись слишком короткая, игнорируем.");
+                        setIsRecording(false); // Убедимся, что состояние сброшено
                         return;
                     }
 
                     setIsProcessing(true);
                     try {
-                        // Вызываем новую функцию, передавая ей текущую историю
-                        const { userText, assistantText, audioBase64 } = await sendAudioToServer(audioBlob, history);
+                        // Вызываем новую функцию, передавая ей текущую историю и имя файла
+                        const { userText, assistantText, audioBase64 } = await sendAudioToServer(
+                            audioBlob,
+                            history,
+                            recordingInfoRef.current.filename
+                        );
 
                         // Обновляем историю чата новыми сообщениями
                         setHistory(prevHistory => [
@@ -134,6 +169,7 @@ export const useSpeech = ({ onNewAnswer, onError }: UseSpeechProps): UseSpeechRe
                 setIsRecording(true);
             })
             .catch(err => {
+                console.error("Ошибка доступа к микрофону:", err);
                 onError("Пожалуйста, разрешите доступ к микрофону.");
             });
     }, [history, onNewAnswer, onError]); // Добавляем history в зависимости

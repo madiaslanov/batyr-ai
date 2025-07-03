@@ -1,6 +1,6 @@
 // ui/batyr.tsx
 import style from "./batyr.module.css";
-import { useState } from "react"; // Импортируем хуки
+import { useState, useEffect } from "react"; // Импортируем хуки
 
 interface BatyrProps {
     tgUser?: {
@@ -10,7 +10,7 @@ interface BatyrProps {
     };
     isRecording: boolean;
     isProcessing: boolean;
-    isHistoryEmpty: boolean; // ✅ Новая пропса для онбординга
+    isHistoryEmpty: boolean; // Эта пропса нам все еще нужна
     onToggleRecording: () => void;
 }
 
@@ -18,22 +18,35 @@ export const Batyr = ({
                           tgUser,
                           isRecording,
                           isProcessing,
-                          isHistoryEmpty, // Получаем новую пропсу
+                          isHistoryEmpty,
                           onToggleRecording,
                       }: BatyrProps) => {
-    // Состояние для отслеживания, был ли уже сделан первый клик
-    const [isFirstClickDone, setIsFirstClickDone] = useState(false);
 
-    // Обработчик клика, который также скроет онбординг
-    const handleToggleRecording = () => {
-        if (!isFirstClickDone) {
-            setIsFirstClickDone(true);
+    // Состояние для отображения приветственной подсказки
+    const [showHint, setShowHint] = useState(false);
+
+    // Эффект, который покажет подсказку, если история пуста
+    useEffect(() => {
+        if (isHistoryEmpty) {
+            // Показываем подсказку при монтировании компонента
+            setShowHint(true);
+
+            // Устанавливаем таймер, чтобы скрыть подсказку через 5 секунд
+            const timer = setTimeout(() => {
+                setShowHint(false);
+            }, 5000); // 5000 миллисекунд = 5 секунд
+
+            // Очищаем таймер, если компонент размонтируется раньше
+            return () => clearTimeout(timer);
         }
+    }, [isHistoryEmpty]); // Зависимость от isHistoryEmpty
+
+    // Обработчик клика, который принудительно скроет подсказку и начнет запись
+    const handleToggleRecording = () => {
+        setShowHint(false); // Скрываем подсказку при первом же действии
         onToggleRecording();
     };
 
-    // Показываем онбординг, если история пуста и еще не было клика
-    const showOnboarding = isHistoryEmpty && !isFirstClickDone;
 
     return (
         <div className={style.batyrContent}>
@@ -44,26 +57,27 @@ export const Batyr = ({
                 </div>
             </div>
 
-            {/* ✅ Блок с онбордингом */}
-            {showOnboarding && (
-                <div className={style.onboardingTooltip}>
-                    <p>Сәлем! Менімен сөйлесу үшін осы жерді басыңыз</p>
-                    <span>👇</span>
+            {/* Модель Батыра теперь обертка для подсказки */}
+            <div className={style.batyrWrapper}>
+                {/* ✅ Новая приветственная подсказка */}
+                {showHint && (
+                    <div className={style.welcomeHint}>
+                       Батырды баста, <br/>
+                        Маған сұрақ қой, мысалы: <br />
+                        <strong>«Алтын Орда қашан құрылды?»</strong>
+                    </div>
+                )}
+
+                <div className={style.batyrModel} onClick={handleToggleRecording}>
+                    <div className={`${style.statusIndicator} ${isRecording ? style.recording : ''} ${isProcessing ? style.processing : ''}`}>
+                        {isProcessing ? '🤔' : (isRecording ? '⏹️' : '🎤')}
+                    </div>
+
+                    <img
+                        src="/homePage/Hero.png"
+                        alt="Герой"
+                    />
                 </div>
-            )}
-
-            <div className={style.batyrModel} onClick={handleToggleRecording}>
-                {/* ✅ Пульсирующий индикатор для привлечения внимания */}
-                {showOnboarding && <div className={style.pulseIndicator}></div>}
-
-                <div className={`${style.statusIndicator} ${isRecording ? style.recording : ''} ${isProcessing ? style.processing : ''}`}>
-                    {isProcessing ? '🤔' : (isRecording ? '⏹️' : '🎤')}
-                </div>
-
-                <img
-                    src="/homePage/Hero.png"
-                    alt="Герой"
-                />
             </div>
         </div>
     );
