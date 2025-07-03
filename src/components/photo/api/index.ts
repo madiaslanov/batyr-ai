@@ -75,14 +75,12 @@ export const getTaskStatus = async (jobId: string): Promise<any> => {
  * Отправляет запрос на бэкенд, чтобы тот прислал готовое фото в чат с ботом.
  */
 export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: string }> => {
-    const initData = getTelegramInitData();
-    // @ts-ignore
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const initData = getTelegramInitData(); // Эта функция у вас уже есть
 
     const headers = new Headers();
+    // ✅ Отправляем ТОЛЬКО initData. Заголовок с ID больше не нужен.
     headers.append('X-Telegram-Init-Data', initData);
     headers.append('Content-Type', 'application/json');
-    headers.append('X-Telegram-User-Id', String(tgUser.id));
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/send-photo-to-chat`, {
@@ -90,11 +88,14 @@ export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: strin
             headers: headers,
             body: JSON.stringify({ imageUrl: imageUrl }),
         });
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: "Ошибка при отправке фото" }));
+            const errorData = await response.json().catch(() => ({ detail: "Сервер вернул ошибку при отправке фото" }));
             throw new Error(errorData.detail);
         }
+
         return await response.json();
+
     } catch (error) {
         console.error("Ошибка при запросе на отправку фото в чат:", error);
         throw error;
