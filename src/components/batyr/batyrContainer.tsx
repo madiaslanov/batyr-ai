@@ -13,7 +13,6 @@ export const BatyrContainer = () => {
         audio.play().catch(e => console.error("Ошибка воспроизведения аудио:", e));
     };
 
-    // Коллбэк для обработки ошибок
     const handleError = (message: string) => {
         // Здесь можно показать красивое уведомление вместо alert
         alert(message);
