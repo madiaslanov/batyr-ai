@@ -1,13 +1,13 @@
 // PhotoContainer.tsx
 import { useEffect, useRef, useState } from "react";
 import { useBatyrStore } from "./module/useBatyrStore.ts";
-import { getTaskStatus, startFaceSwapTask, downloadImageProxy } from "./api";
+// ✅ Импортируем новую функцию и удаляем старую
+import { getTaskStatus, startFaceSwapTask, sendPhotoToChat } from "./api";
 import Photo from "./ui/photo.tsx";
 
-const POLLING_TIMEOUT_SECONDS = 100;
+const POLLING_TIMEOUT_SECONDS = 180;
 
 const PhotoContainer = () => {
-    // ✅ 1. Достаем новое состояние и сеттер из хранилища
     const {
         step, setStep,
         userPhoto, setUserPhoto,
@@ -17,10 +17,11 @@ const PhotoContainer = () => {
         jobId, setJobId,
         clearAll,
         isPolling, setIsPolling,
-        loadingMessage, setLoadingMessage, // <-- Новые переменные
+        loadingMessage, setLoadingMessage,
     } = useBatyrStore();
 
-    const [isDownloading, setIsDownloading] = useState(false);
+    // ✅ Переименовано для ясности
+    const [isSending, setIsSending] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const pollingStartTimeRef = useRef<number | null>(null);
 
@@ -32,11 +33,9 @@ const PhotoContainer = () => {
 
     const startPolling = (currentJobId: string) => {
         if (isPolling || intervalRef.current) return;
-
         setLoadingMessage('⏳ Уменьшаю ваше фото и подбираю образ...');
         setIsPolling(true);
         pollingStartTimeRef.current = Date.now();
-
         intervalRef.current = setInterval(async () => {
             if (Date.now() - (pollingStartTimeRef.current ?? 0) > POLLING_TIMEOUT_SECONDS * 1000) {
                 alert("Время ожидания результата истекло. Пожалуйста, попробуйте еще раз.");
@@ -45,33 +44,21 @@ const PhotoContainer = () => {
             }
             try {
                 const data = await getTaskStatus(currentJobId);
-                console.log(`⌛ Статус задачи [${currentJobId}]: ${data.status}, Сообщение: ${data.message}`);
-
-                if (data.message) {
-                    setLoadingMessage(data.message);
-                }
-
+                if (data.message) { setLoadingMessage(data.message); }
                 if (data.status === "completed") {
                     stopPolling();
                     setResultUrl(data.result_url);
                     setLoading(false);
                     localStorage.setItem("batyr_result_url", data.result_url);
-                    if (preview) {
-                        localStorage.setItem("batyr_preview", preview);
-                    }
+                    if (preview) { localStorage.setItem("batyr_preview", preview); }
                     localStorage.removeItem("batyr_job_id");
                     return;
                 }
-
-                // ✅ ИЗМЕНЕНО: Теперь мы просто показываем готовое сообщение об ошибке с бэкенда
                 if (data.status === "failed") {
-                    // Бэкенд уже подготовил для нас красивое сообщение
-                    // (либо про "лицо не найдено", либо общую ошибку)
                     alert(`Ошибка: ${data.error || "Неизвестная ошибка на сервере"}`);
                     handleClear();
                     return;
                 }
-
             } catch (err) {
                 alert("Произошла ошибка соединения при проверке статуса. Попробуйте обновить страницу.");
                 handleClear();
@@ -80,10 +67,7 @@ const PhotoContainer = () => {
     };
 
     const stopPolling = () => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-        }
+        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
         setIsPolling(false);
         pollingStartTimeRef.current = null;
     };
@@ -93,7 +77,6 @@ const PhotoContainer = () => {
         const tg = window.Telegram?.WebApp;
         if (!tg) { return; }
         tg.ready();
-
         const storedJobId = localStorage.getItem("batyr_job_id");
         const storedResultUrl = localStorage.getItem("batyr_result_url");
         const storedPreview = localStorage.getItem("batyr_preview");
@@ -125,21 +108,17 @@ const PhotoContainer = () => {
         clearLocalStorage();
         try {
             const data = await startFaceSwapTask(userPhoto);
-            const newJobId = data.job_id;
-            if (newJobId) {
-                setJobId(newJobId);
-                localStorage.setItem("batyr_job_id", newJobId);
-                if (preview) {
-                    localStorage.setItem("batyr_preview", preview);
-                }
-                startPolling(newJobId);
+            if (data.job_id) {
+                setJobId(data.job_id);
+                localStorage.setItem("batyr_job_id", data.job_id);
+                if (preview) { localStorage.setItem("batyr_preview", preview); }
+                startPolling(data.job_id);
             } else {
                 alert("Ошибка запуска генерации. Пожалуйста, попробуйте снова.");
                 handleClear();
             }
         } catch (err) {
-            const errorMessage = (err as Error)?.message || "Произошла неизвестная ошибка.";
-            alert(`Не удалось отправить фото: ${errorMessage}`);
+            alert(`Не удалось отправить фото: ${(err as Error).message}`);
             handleClear();
         }
     };
@@ -160,23 +139,17 @@ const PhotoContainer = () => {
         }
     };
 
-    const downloadImage = async () => {
-        if (!resultUrl || isDownloading) return;
-        setIsDownloading(true);
+    // ✅ ИЗМЕНЕНО: Функция теперь отправляет фото в чат
+    const handleSendToChat = async () => {
+        if (!resultUrl || isSending) return;
+        setIsSending(true);
         try {
-            const imageBlob = await downloadImageProxy(resultUrl);
-            const localUrl = URL.createObjectURL(imageBlob);
-            const link = document.createElement("a");
-            link.href = localUrl;
-            link.download = "batyr-result.jpg";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(localUrl);
+            await sendPhotoToChat(resultUrl);
+            alert("Готово! Фото отправлено в ваш чат с ботом. 🚀");
         } catch (error) {
-            alert(`Не удалось скачать файл: ${(error as Error).message}`);
+            alert(`Не удалось отправить фото: ${(error as Error).message}`);
         } finally {
-            setIsDownloading(false);
+            setIsSending(false);
         }
     };
 
@@ -190,9 +163,9 @@ const PhotoContainer = () => {
             onNext={handleNext}
             onClear={handleClear}
             onFileChange={handleFileChange}
-            onDownload={downloadImage}
-            isDownloading={isDownloading}
-            loadingMessage={loadingMessage} // ✅ Передаем сообщение в UI
+            onSendToChat={handleSendToChat} // ✅ Передаем новый обработчик
+            isSending={isSending} // ✅ Передаем новое состояние
+            loadingMessage={loadingMessage}
         />
     );
 };

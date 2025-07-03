@@ -1,18 +1,18 @@
 import styles from "../photo.module.css";
 
-// 1. Добавляем 'loadingMessage' в тип пропсов
+// 1. Изменяем тип пропсов
 type PhotoUIProps = {
     step: 1 | 2;
     userPhoto: File | null;
     preview: string | null;
     resultUrl: string | null;
     loading: boolean;
-    isDownloading: boolean;
-    loadingMessage: string; // ✅ Новый пропс
+    isSending: boolean; // ✅ Вместо isDownloading
+    loadingMessage: string;
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onClear: () => void;
     onNext: () => void;
-    onDownload: () => void;
+    onSendToChat: () => void; // ✅ Вместо onDownload
 };
 
 const Photo = ({
@@ -21,12 +21,12 @@ const Photo = ({
                    preview,
                    resultUrl,
                    loading,
-                   isDownloading,
-                   loadingMessage, // ✅ 2. Принимаем новый пропс
+                   isSending, // ✅ Принимаем isSending
+                   loadingMessage,
                    onFileChange,
                    onClear,
                    onNext,
-                   onDownload,
+                   onSendToChat, // ✅ Принимаем onSendToChat
                }: PhotoUIProps) => {
 
     return (
@@ -49,13 +49,11 @@ const Photo = ({
                             <div className={styles.inputIcon}></div>
                         </label>
                     )}
-
                     {preview && (
                         <div className={styles.preview}>
                             <img src={preview} alt="Превью" className={styles.previewImage}/>
                         </div>
                     )}
-
                     <div className={styles.buttonGroup}>
                         <button className={styles.button} onClick={onClear}>Очистить</button>
                         <button className={styles.button} onClick={onNext} disabled={loading || !userPhoto}>
@@ -70,14 +68,11 @@ const Photo = ({
                     <div className={styles.resultContainer}>
                         {loading && (
                             <div className={styles.loadingIndicator}>
-                                {/* ✅ 3. Используем динамическое сообщение */}
                                 <p className={styles.loading}>{loadingMessage}</p>
                             </div>
                         )}
-
                         {!loading && resultUrl && (
                             <div className={styles.resultContent}>
-                                {/* ✅ Здесь тоже можно использовать финальное сообщение */}
                                 <p className={styles.loading}>{loadingMessage}</p>
                                 <img src={resultUrl} alt="Результат" className={styles.resultImage}/>
                             </div>
@@ -87,12 +82,13 @@ const Photo = ({
                     <div className={styles.buttonGroup}>
                         {!loading && resultUrl && (
                             <>
+                                {/* ✅ 3. Модифицируем кнопку */}
                                 <button
                                     className={styles.button}
-                                    onClick={onDownload}
-                                    disabled={isDownloading}
+                                    onClick={onSendToChat} // Используем новый обработчик
+                                    disabled={isSending} // Используем новое состояние
                                 >
-                                    {isDownloading ? '⏳ Скачивание...' : '⬇️ Скачать'}
+                                    {isSending ? '🚀 Отправка...' : 'Отправить в чат'}
                                 </button>
 
                                 <button className={styles.button} onClick={onClear}>

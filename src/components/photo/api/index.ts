@@ -3,9 +3,7 @@
 const API_BASE_URL = "https://api.batyrai.com";
 
 /**
- * Отправляет фото на сервер, чтобы запустить задачу генерации в фоне.
- * @param file - Файл изображения (объект File).
- * @returns Promise, который разрешается в объект { job_id: string, remaining_attempts: number }.
+ * Отправляет фото на сервер для начала генерации.
  */
 export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, remaining_attempts: number }> => {
     const formData = new FormData();
@@ -21,14 +19,10 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
     const headers = new Headers();
     headers.append('X-Telegram-User-Id', String(tgUser.id));
 
-    // ✅ ИЗМЕНЕНО: Кодируем имена, чтобы избежать ошибки с не-латинскими символами
-    // Эта функция правильно кодирует Unicode (кириллицу, эмодзи) в Base64
     const encodeHeader = (str: string) => {
         try {
-            // btoa может не работать с Unicode, поэтому мы сначала кодируем строку
             return btoa(unescape(encodeURIComponent(str)));
         } catch (e) {
-            // В случае ошибки (например, пустая строка), возвращаем закодированное 'unknown'
             return btoa('unknown');
         }
     };
@@ -57,9 +51,7 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
 };
 
 /**
- * Проверяет статус задачи на сервере по ее Job ID.
- * @param jobId - Уникальный ID задачи.
- * @returns Promise с данными о статусе задачи.
+ * Проверяет статус задачи на сервере.
  */
 export const getTaskStatus = async (jobId: string): Promise<any> => {
     try {
@@ -78,23 +70,38 @@ export const getTaskStatus = async (jobId: string): Promise<any> => {
 };
 
 /**
- * Запрашивает у нашего бэкенда скачать изображение с удаленного URL.
- * @param imageUrl - Полный URL изображения для скачивания.
- * @returns Promise, который разрешается в объект Blob.
+ * ✅ НОВАЯ ФУНКЦИЯ
+ * Отправляет запрос на бэкенд, чтобы тот прислал готовое фото в чат с ботом.
+ * @param imageUrl - URL готового изображения.
  */
-export const downloadImageProxy = async (imageUrl: string): Promise<Blob> => {
-    const proxyUrl = `${API_BASE_URL}/api/download-image?url=${encodeURIComponent(imageUrl)}`;
+export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: string }> => {
+    // @ts-ignore
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    if (!tgUser?.id) {
+        throw new Error("Не удалось получить данные пользователя Telegram для отправки фото.");
+    }
+
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('X-Telegram-User-Id', String(tgUser.id));
 
     try {
-        const response = await fetch(proxyUrl);
+        const response = await fetch(`${API_BASE_URL}/api/send-photo-to-chat`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ imageUrl: imageUrl }),
+        });
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: `Сервер вернул ошибку ${response.status}` }));
-            throw new Error(errorData.detail || "Не удалось скачать файл.");
+            const errorData = await response.json().catch(() => ({ detail: "Сервер вернул ошибку при отправке фото" }));
+            throw new Error(errorData.detail);
         }
-        return await response.blob();
+
+        return await response.json();
 
     } catch (error) {
-        console.error("Ошибка при скачивании файла через прокси:", error);
+        console.error("Ошибка при запросе на отправку фото в чат:", error);
         throw error;
     }
 };
