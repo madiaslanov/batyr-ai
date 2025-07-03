@@ -1,6 +1,5 @@
 // /src/api.ts
 
-// Укажите здесь базовый URL вашего API.
 const API_BASE_URL = "https://api.batyrai.com";
 
 /**
@@ -21,8 +20,21 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
 
     const headers = new Headers();
     headers.append('X-Telegram-User-Id', String(tgUser.id));
-    headers.append('X-Telegram-Username', tgUser.username || 'unknown');
-    headers.append('X-Telegram-First-Name', tgUser.first_name || 'unknown');
+
+    // ✅ ИЗМЕНЕНО: Кодируем имена, чтобы избежать ошибки с не-латинскими символами
+    // Эта функция правильно кодирует Unicode (кириллицу, эмодзи) в Base64
+    const encodeHeader = (str: string) => {
+        try {
+            // btoa может не работать с Unicode, поэтому мы сначала кодируем строку
+            return btoa(unescape(encodeURIComponent(str)));
+        } catch (e) {
+            // В случае ошибки (например, пустая строка), возвращаем закодированное 'unknown'
+            return btoa('unknown');
+        }
+    };
+
+    headers.append('X-Telegram-Username', encodeHeader(tgUser.username || 'unknown'));
+    headers.append('X-Telegram-First-Name', encodeHeader(tgUser.first_name || 'unknown'));
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/start-face-swap`, {
@@ -66,32 +78,23 @@ export const getTaskStatus = async (jobId: string): Promise<any> => {
 };
 
 /**
- * ✅ НОВАЯ ФУНКЦИЯ
  * Запрашивает у нашего бэкенда скачать изображение с удаленного URL.
- * Это решает проблему с CORS при скачивании.
- * @param imageUrl - Полный URL изображения для скачивания (например, от piapi.ai).
- * @returns Promise, который разрешается в объект Blob (бинарные данные картинки).
+ * @param imageUrl - Полный URL изображения для скачивания.
+ * @returns Promise, который разрешается в объект Blob.
  */
 export const downloadImageProxy = async (imageUrl: string): Promise<Blob> => {
-    // Формируем URL к нашему прокси-эндпоинту на бэкенде
     const proxyUrl = `${API_BASE_URL}/api/download-image?url=${encodeURIComponent(imageUrl)}`;
 
     try {
-        // Делаем запрос к НАШЕМУ серверу
         const response = await fetch(proxyUrl);
-
         if (!response.ok) {
-            // Если наш бэкенд вернул ошибку, обрабатываем ее
             const errorData = await response.json().catch(() => ({ detail: `Сервер вернул ошибку ${response.status}` }));
             throw new Error(errorData.detail || "Не удалось скачать файл.");
         }
-
-        // Если все успешно, возвращаем данные картинки как Blob
         return await response.blob();
 
     } catch (error) {
         console.error("Ошибка при скачивании файла через прокси:", error);
-        // Перебрасываем ошибку дальше, чтобы UI мог ее показать
         throw error;
     }
 };
