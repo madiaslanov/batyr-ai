@@ -1,8 +1,8 @@
 // PhotoContainer.tsx
-// ✅ Импортируем 'useState' для отслеживания состояния скачивания
 import { useEffect, useRef, useState } from "react";
 import { useBatyrStore } from "./module/useBatyrStore.ts";
-import { getTaskStatus, startFaceSwapTask } from "./api";
+// ✅ 1. ИМПОРТИРУЕМ НОВУЮ ФУНКЦИЮ
+import { getTaskStatus, startFaceSwapTask, downloadImageProxy } from "./api";
 import Photo from "./ui/photo.tsx";
 
 const POLLING_TIMEOUT_SECONDS = 180;
@@ -19,7 +19,6 @@ const PhotoContainer = () => {
         isPolling, setIsPolling,
     } = useBatyrStore();
 
-    // ✅ Добавляем состояние, чтобы знать, идет ли сейчас скачивание
     const [isDownloading, setIsDownloading] = useState(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,11 +32,9 @@ const PhotoContainer = () => {
 
     const startPolling = (currentJobId: string) => {
         if (isPolling || intervalRef.current) return;
-
         console.log(`🚀 Начинаем опрос для Job ID: ${currentJobId}`);
         setIsPolling(true);
         pollingStartTimeRef.current = Date.now();
-
         intervalRef.current = setInterval(async () => {
             if (Date.now() - (pollingStartTimeRef.current ?? 0) > POLLING_TIMEOUT_SECONDS * 1000) {
                 console.error("⏱️ Таймаут опроса истек.");
@@ -45,11 +42,9 @@ const PhotoContainer = () => {
                 handleClear();
                 return;
             }
-
             try {
                 const data = await getTaskStatus(currentJobId);
                 console.log(`⌛ Статус задачи [${currentJobId}]: ${data.status}`);
-
                 if (data.status === "completed") {
                     console.log("✅ Результат получен!", data.result_url);
                     stopPolling();
@@ -62,14 +57,12 @@ const PhotoContainer = () => {
                     localStorage.removeItem("batyr_job_id");
                     return;
                 }
-
                 if (data.status === "failed") {
                     console.error("❌ Задача завершилась с ошибкой:", data.error);
                     alert(`Ошибка генерации: ${data.error || "Неизвестная ошибка на сервере"}`);
                     handleClear();
                     return;
                 }
-
             } catch (err) {
                 console.error("🔥 Ошибка при опросе статуса:", err);
                 alert("Произошла ошибка соединения при проверке статуса. Попробуйте обновить страницу.");
@@ -96,23 +89,17 @@ const PhotoContainer = () => {
             return;
         }
         tg.ready();
-
-        console.log("✅ Telegram Web App готово. Запускаем инициализацию состояния.");
         const storedJobId = localStorage.getItem("batyr_job_id");
         const storedResultUrl = localStorage.getItem("batyr_result_url");
         const storedPreview = localStorage.getItem("batyr_preview");
-
         if (storedResultUrl && storedPreview) {
-            console.log("Восстановление из localStorage: найден готовый результат.");
             setPreview(storedPreview);
             setResultUrl(storedResultUrl);
             setStep(2);
             setLoading(false);
             return;
         }
-
         if (storedJobId) {
-            console.log("Восстановление из localStorage: найдена активная задача.");
             setJobId(storedJobId);
             setPreview(storedPreview || null);
             setStep(2);
@@ -120,10 +107,7 @@ const PhotoContainer = () => {
             startPolling(storedJobId);
             return;
         }
-
-        console.log("Новая сессия, состояние чистое.");
         handleClear();
-
         return () => stopPolling();
     }, []);
 
@@ -134,7 +118,6 @@ const PhotoContainer = () => {
         setResultUrl(null);
         clearLocalStorage();
         try {
-            console.log("🚀 Запускаем задачу на бэкенде...");
             const data = await startFaceSwapTask(userPhoto);
             const newJobId = data.job_id;
             if (newJobId) {
@@ -145,12 +128,10 @@ const PhotoContainer = () => {
                 }
                 startPolling(newJobId);
             } else {
-                console.error("❌ Не удалось запустить задачу: бэкенд не вернул job_id.");
                 alert("Ошибка запуска генерации. Пожалуйста, попробуйте снова.");
                 handleClear();
             }
         } catch (err) {
-            console.error("🔥 Критическая ошибка при запуске задачи:", err);
             const errorMessage = (err as Error)?.message || "Произошла неизвестная ошибка.";
             alert(`Не удалось отправить фото: ${errorMessage}`);
             handleClear();
@@ -173,41 +154,30 @@ const PhotoContainer = () => {
         }
     };
 
-    // ✅ ИЗМЕНЕНО: Новая, улучшенная функция для скачивания файла
+    // ✅ 2. ИЗМЕНЕНО: Эта функция теперь использует прокси на бэкенде
     const downloadImage = async () => {
         if (!resultUrl || isDownloading) return;
 
         setIsDownloading(true);
 
         try {
-            // Скачиваем данные изображения в память
-            const response = await fetch(resultUrl);
-            if (!response.ok) {
-                throw new Error(`Ошибка сети при загрузке изображения: ${response.status}`);
-            }
+            // Вызываем нашу новую API функцию для скачивания через прокси
+            const imageBlob = await downloadImageProxy(resultUrl);
 
-            // Создаем бинарный объект (Blob)
-            const imageBlob = await response.blob();
-
-            // Создаем временную локальную ссылку на этот объект
+            // Остальная логика для создания ссылки и скачивания остается прежней
             const localUrl = URL.createObjectURL(imageBlob);
-
-            // Создаем невидимый элемент <a> для скачивания
             const link = document.createElement("a");
             link.href = localUrl;
-            link.download = "batyr-result.jpg"; // Имя файла по умолчанию
+            link.download = "batyr-result.jpg";
             document.body.appendChild(link);
-            link.click(); // Инициируем скачивание
-            document.body.removeChild(link); // Убираем элемент со страницы
-
-            // Освобождаем память, удаляя временную ссылку
+            link.click();
+            document.body.removeChild(link);
             URL.revokeObjectURL(localUrl);
 
         } catch (error) {
             console.error("Ошибка при скачивании файла:", error);
             alert(`Не удалось скачать файл: ${(error as Error).message}`);
         } finally {
-            // В любом случае (успех или ошибка) убираем состояние загрузки
             setIsDownloading(false);
         }
     };
@@ -223,7 +193,6 @@ const PhotoContainer = () => {
             onClear={handleClear}
             onFileChange={handleFileChange}
             onDownload={downloadImage}
-            // ✅ Передаем новое состояние в UI, чтобы кнопка могла его использовать
             isDownloading={isDownloading}
         />
     );

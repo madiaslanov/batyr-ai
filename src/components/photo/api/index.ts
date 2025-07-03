@@ -12,21 +12,15 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
     const formData = new FormData();
     formData.append("user_photo", file);
 
-    // <<< ИЗМЕНЕНО: Шаг 1 - Получаем данные о пользователе из Telegram Web App
-    // @ts-ignore - Говорим TypeScript'у не ругаться на отсутствие типов для window.Telegram
+    // @ts-ignore
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
     if (!tgUser?.id) {
-        // Если мы не смогли получить ID пользователя, нет смысла отправлять запрос
-        console.error("Telegram User ID not found. Cannot proceed.");
-        // Выбрасываем ошибку, чтобы UI мог ее показать
         throw new Error("Не удалось получить данные пользователя Telegram. Пожалуйста, перезапустите приложение.");
     }
 
-    // <<< ИЗМЕНЕНО: Шаг 2 - Создаем объект заголовков
     const headers = new Headers();
-    // Названия заголовков должны точно совпадать с теми, что ожидает FastAPI (x-telegram-...)
-    headers.append('X-Telegram-User-Id', String(tgUser.id)); // Преобразуем ID в строку
+    headers.append('X-Telegram-User-Id', String(tgUser.id));
     headers.append('X-Telegram-Username', tgUser.username || 'unknown');
     headers.append('X-Telegram-First-Name', tgUser.first_name || 'unknown');
 
@@ -34,21 +28,18 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
         const response = await fetch(`${API_BASE_URL}/api/start-face-swap`, {
             method: 'POST',
             body: formData,
-            headers: headers, // <<< ИЗМЕНЕНО: Шаг 3 - Добавляем заголовки в запрос
+            headers: headers,
         });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: "Произошла неизвестная ошибка на сервере." }));
-            // Теперь мы можем показать пользователю сообщение о закончившемся лимите
             throw new Error(errorData.detail || "Не удалось отправить запрос.");
         }
 
-        // Ожидаем ответ вида { "job_id": "...", "remaining_attempts": X }
         return await response.json();
 
     } catch (error) {
         console.error("Failed to start face swap task:", error);
-        // Перебрасываем ошибку дальше, чтобы UI мог ее красиво отобразить
         throw error;
     }
 };
@@ -70,6 +61,37 @@ export const getTaskStatus = async (jobId: string): Promise<any> => {
         return await response.json();
     } catch (error) {
         console.error(`Failed to get status for job ${jobId}:`, error);
+        throw error;
+    }
+};
+
+/**
+ * ✅ НОВАЯ ФУНКЦИЯ
+ * Запрашивает у нашего бэкенда скачать изображение с удаленного URL.
+ * Это решает проблему с CORS при скачивании.
+ * @param imageUrl - Полный URL изображения для скачивания (например, от piapi.ai).
+ * @returns Promise, который разрешается в объект Blob (бинарные данные картинки).
+ */
+export const downloadImageProxy = async (imageUrl: string): Promise<Blob> => {
+    // Формируем URL к нашему прокси-эндпоинту на бэкенде
+    const proxyUrl = `${API_BASE_URL}/api/download-image?url=${encodeURIComponent(imageUrl)}`;
+
+    try {
+        // Делаем запрос к НАШЕМУ серверу
+        const response = await fetch(proxyUrl);
+
+        if (!response.ok) {
+            // Если наш бэкенд вернул ошибку, обрабатываем ее
+            const errorData = await response.json().catch(() => ({ detail: `Сервер вернул ошибку ${response.status}` }));
+            throw new Error(errorData.detail || "Не удалось скачать файл.");
+        }
+
+        // Если все успешно, возвращаем данные картинки как Blob
+        return await response.blob();
+
+    } catch (error) {
+        console.error("Ошибка при скачивании файла через прокси:", error);
+        // Перебрасываем ошибку дальше, чтобы UI мог ее показать
         throw error;
     }
 };
