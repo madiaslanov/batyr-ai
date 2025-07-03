@@ -10,6 +10,7 @@ interface BatyrState {
     loading: boolean;
     isPolling: boolean;
     jobId: string | null;
+    loadingMessage: string; // ✅ НОВОЕ СОСТОЯНИЕ для текста загрузки
 
     // Методы для изменения состояния (сеттеры)
     setStep: (step: 1 | 2) => void;
@@ -19,6 +20,7 @@ interface BatyrState {
     setLoading: (loading: boolean) => void;
     setIsPolling: (isPolling: boolean) => void;
     setJobId: (id: string | null) => void;
+    setLoadingMessage: (message: string) => void; // ✅ НОВЫЙ СЕТТЕР
 
     // Метод для полного сброса состояния
     clearAll: () => void;
@@ -34,6 +36,7 @@ export const useBatyrStore = create<BatyrState>((set) => ({
     loading: false,
     isPolling: false,
     jobId: null,
+    loadingMessage: '⏳ Генерация изображения...', // ✅ Начальное значение по умолчанию
 
     // Определяем сеттеры
     setStep: (step) => set({ step }),
@@ -43,10 +46,9 @@ export const useBatyrStore = create<BatyrState>((set) => ({
     setLoading: (loading) => set({ loading }),
     setIsPolling: (isPolling) => set({ isPolling }),
     setJobId: (id) => set({ jobId: id }),
+    setLoadingMessage: (message) => set({ loadingMessage: message }), // ✅ Реализация сеттера
 
-    // ✅ ИСПРАВЛЕНИЕ ЗДЕСЬ
-    // Метод clearAll теперь просто сбрасывает состояние к начальному,
-    // перечисляя поля явно.
+    // Метод clearAll теперь сбрасывает и новое состояние
     clearAll: () => set({
         step: 1,
         userPhoto: null,
@@ -55,5 +57,6 @@ export const useBatyrStore = create<BatyrState>((set) => ({
         loading: false,
         isPolling: false,
         jobId: null,
+        loadingMessage: '⏳ Генерация изображения...', // ✅ Сбрасываем к значению по умолчанию
     }),
 }));

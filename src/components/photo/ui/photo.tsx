@@ -1,13 +1,14 @@
 import styles from "../photo.module.css";
 
-// ✅ 1. Добавляем новый пропс в тип
+// 1. Добавляем 'loadingMessage' в тип пропсов
 type PhotoUIProps = {
     step: 1 | 2;
     userPhoto: File | null;
     preview: string | null;
     resultUrl: string | null;
     loading: boolean;
-    isDownloading: boolean; // Новый пропс для состояния скачивания
+    isDownloading: boolean;
+    loadingMessage: string; // ✅ Новый пропс
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onClear: () => void;
     onNext: () => void;
@@ -20,7 +21,8 @@ const Photo = ({
                    preview,
                    resultUrl,
                    loading,
-                   isDownloading, // ✅ 2. Принимаем новый пропс здесь
+                   isDownloading,
+                   loadingMessage, // ✅ 2. Принимаем новый пропс
                    onFileChange,
                    onClear,
                    onNext,
@@ -68,13 +70,15 @@ const Photo = ({
                     <div className={styles.resultContainer}>
                         {loading && (
                             <div className={styles.loadingIndicator}>
-                                <p className={styles.loading}>⏳ Генерация изображения...</p>
+                                {/* ✅ 3. Используем динамическое сообщение */}
+                                <p className={styles.loading}>{loadingMessage}</p>
                             </div>
                         )}
 
                         {!loading && resultUrl && (
                             <div className={styles.resultContent}>
-                                <p className={styles.loading}>✅ Изображение готово</p>
+                                {/* ✅ Здесь тоже можно использовать финальное сообщение */}
+                                <p className={styles.loading}>{loadingMessage}</p>
                                 <img src={resultUrl} alt="Результат" className={styles.resultImage}/>
                             </div>
                         )}
@@ -83,11 +87,10 @@ const Photo = ({
                     <div className={styles.buttonGroup}>
                         {!loading && resultUrl && (
                             <>
-                                {/* ✅ 3. Модифицируем кнопку скачивания */}
                                 <button
                                     className={styles.button}
                                     onClick={onDownload}
-                                    disabled={isDownloading} // Кнопка неактивна во время скачивания
+                                    disabled={isDownloading}
                                 >
                                     {isDownloading ? '⏳ Скачивание...' : '⬇️ Скачать'}
                                 </button>

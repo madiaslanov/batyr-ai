@@ -1,13 +1,13 @@
 // PhotoContainer.tsx
 import { useEffect, useRef, useState } from "react";
 import { useBatyrStore } from "./module/useBatyrStore.ts";
-// ✅ 1. ИМПОРТИРУЕМ НОВУЮ ФУНКЦИЮ
 import { getTaskStatus, startFaceSwapTask, downloadImageProxy } from "./api";
 import Photo from "./ui/photo.tsx";
 
-const POLLING_TIMEOUT_SECONDS = 180;
+const POLLING_TIMEOUT_SECONDS = 100;
 
 const PhotoContainer = () => {
+    // ✅ 1. Достаем новое состояние и сеттер из хранилища
     const {
         step, setStep,
         userPhoto, setUserPhoto,
@@ -17,10 +17,10 @@ const PhotoContainer = () => {
         jobId, setJobId,
         clearAll,
         isPolling, setIsPolling,
+        loadingMessage, setLoadingMessage, // <-- Новые переменные
     } = useBatyrStore();
 
     const [isDownloading, setIsDownloading] = useState(false);
-
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const pollingStartTimeRef = useRef<number | null>(null);
 
@@ -32,9 +32,13 @@ const PhotoContainer = () => {
 
     const startPolling = (currentJobId: string) => {
         if (isPolling || intervalRef.current) return;
-        console.log(`🚀 Начинаем опрос для Job ID: ${currentJobId}`);
+
+        // Устанавливаем начальное сообщение
+        setLoadingMessage('⏳ Уменьшаю ваше фото и подбираю образ...');
+
         setIsPolling(true);
         pollingStartTimeRef.current = Date.now();
+
         intervalRef.current = setInterval(async () => {
             if (Date.now() - (pollingStartTimeRef.current ?? 0) > POLLING_TIMEOUT_SECONDS * 1000) {
                 console.error("⏱️ Таймаут опроса истек.");
@@ -44,9 +48,14 @@ const PhotoContainer = () => {
             }
             try {
                 const data = await getTaskStatus(currentJobId);
-                console.log(`⌛ Статус задачи [${currentJobId}]: ${data.status}`);
+                console.log(`⌛ Статус задачи [${currentJobId}]: ${data.status}, Сообщение: ${data.message}`);
+
+                // ✅ 2. ГЛАВНОЕ ИЗМЕНЕНИЕ: Обновляем сообщение для пользователя
+                if (data.message) {
+                    setLoadingMessage(data.message);
+                }
+
                 if (data.status === "completed") {
-                    console.log("✅ Результат получен!", data.result_url);
                     stopPolling();
                     setResultUrl(data.result_url);
                     setLoading(false);
@@ -58,13 +67,11 @@ const PhotoContainer = () => {
                     return;
                 }
                 if (data.status === "failed") {
-                    console.error("❌ Задача завершилась с ошибкой:", data.error);
                     alert(`Ошибка генерации: ${data.error || "Неизвестная ошибка на сервере"}`);
                     handleClear();
                     return;
                 }
             } catch (err) {
-                console.error("🔥 Ошибка при опросе статуса:", err);
                 alert("Произошла ошибка соединения при проверке статуса. Попробуйте обновить страницу.");
                 handleClear();
             }
@@ -78,17 +85,14 @@ const PhotoContainer = () => {
         }
         setIsPolling(false);
         pollingStartTimeRef.current = null;
-        console.log("🛑 Опрос остановлен.");
     };
 
     useEffect(() => {
         // @ts-ignore
         const tg = window.Telegram?.WebApp;
-        if (!tg) {
-            console.error("Окружение Telegram Web App не найдено!");
-            return;
-        }
+        if (!tg) { return; }
         tg.ready();
+
         const storedJobId = localStorage.getItem("batyr_job_id");
         const storedResultUrl = localStorage.getItem("batyr_result_url");
         const storedPreview = localStorage.getItem("batyr_preview");
@@ -97,6 +101,7 @@ const PhotoContainer = () => {
             setResultUrl(storedResultUrl);
             setStep(2);
             setLoading(false);
+            setLoadingMessage("✅ Изображение готово");
             return;
         }
         if (storedJobId) {
@@ -154,17 +159,11 @@ const PhotoContainer = () => {
         }
     };
 
-    // ✅ 2. ИЗМЕНЕНО: Эта функция теперь использует прокси на бэкенде
     const downloadImage = async () => {
         if (!resultUrl || isDownloading) return;
-
         setIsDownloading(true);
-
         try {
-            // Вызываем нашу новую API функцию для скачивания через прокси
             const imageBlob = await downloadImageProxy(resultUrl);
-
-            // Остальная логика для создания ссылки и скачивания остается прежней
             const localUrl = URL.createObjectURL(imageBlob);
             const link = document.createElement("a");
             link.href = localUrl;
@@ -173,9 +172,7 @@ const PhotoContainer = () => {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(localUrl);
-
         } catch (error) {
-            console.error("Ошибка при скачивании файла:", error);
             alert(`Не удалось скачать файл: ${(error as Error).message}`);
         } finally {
             setIsDownloading(false);
@@ -194,6 +191,7 @@ const PhotoContainer = () => {
             onFileChange={handleFileChange}
             onDownload={downloadImage}
             isDownloading={isDownloading}
+            loadingMessage={loadingMessage} // ✅ Передаем сообщение в UI
         />
     );
 };
