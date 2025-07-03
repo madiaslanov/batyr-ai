@@ -28,7 +28,7 @@ export default function Layout() {
                 </Link>
                 <Link to="/generateComics">
                     <div className={`${style.card} ${location.pathname === "/generateComics" ? style.active : ""}`}>
-                        <img src="/navBar_img/random.png" alt=""/>
+                        <img src="/navBar_img/cubs.png" alt=""/>
                         <p>
                             Comics
                         </p>

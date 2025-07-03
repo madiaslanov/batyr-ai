@@ -89,7 +89,7 @@ nav a{
 
 .card.active img{
     position: absolute;
-    top: -10px;
+    top: -15px;
 }
 
 @media (max-height: 850px) {
@@ -111,10 +111,6 @@ nav a{
     .active p {
         bottom: 10px;
         font-size: 16px;
-    }
-
-    .card.active img {
-        top: -8px;
     }
 
     .main-content {

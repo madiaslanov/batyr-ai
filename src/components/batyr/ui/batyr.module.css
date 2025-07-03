@@ -124,6 +124,7 @@
     height: auto;
     object-fit: contain;
     margin-left: 60px;
+    margin-bottom: 20px;
 }
 
 .settings {
