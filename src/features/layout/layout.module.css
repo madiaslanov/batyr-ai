@@ -96,7 +96,7 @@ nav a{
     nav {
         height: 80px;
         padding-bottom: env(safe-area-inset-bottom);
-        box-sizing: border-box; /* Убедимся, что здесь тоже border-box */
+        box-sizing: border-box;
     }
 
     .card {

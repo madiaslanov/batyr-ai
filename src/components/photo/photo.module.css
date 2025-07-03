@@ -92,7 +92,7 @@
     padding: 8px;
     position: absolute;
     z-index: 1;
-    top: -100px;
+    top: -80px;
     left: -105px;
     transform: translateX(-50%);
     opacity: 0;
@@ -195,7 +195,7 @@
     color: #FFFFFF;
 }
 .resultImage img{
-    width: 100%;
+    width: 80%;
     height: auto;
 }
 @media (max-width: 480px) {
