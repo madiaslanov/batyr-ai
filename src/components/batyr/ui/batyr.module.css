@@ -123,6 +123,7 @@
     max-height: 100vh;
     height: auto;
     object-fit: contain;
+    margin-left: 60px;
 }
 
 .settings {

@@ -2,8 +2,17 @@
 
 const API_BASE_URL = "https://api.batyrai.com";
 
-// Получаем API ключ из переменных окружения Vite
-const API_KEY = import.meta.env.VITE_API_SECRET_KEY || '';
+/**
+ * Получает initData и выбрасывает ошибку, если их нет.
+ */
+const getTelegramInitData = (): string => {
+    // @ts-ignore
+    const initData = window.Telegram?.WebApp?.initData || '';
+    if (!initData) {
+        throw new Error("Не удалось получить данные авторизации Telegram. Пожалуйста, перезапустите приложение.");
+    }
+    return initData;
+};
 
 /**
  * Отправляет фото на сервер для начала генерации.
@@ -11,31 +20,18 @@ const API_KEY = import.meta.env.VITE_API_SECRET_KEY || '';
 export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, remaining_attempts: number }> => {
     const formData = new FormData();
     formData.append("user_photo", file);
+    const initData = getTelegramInitData();
 
     // @ts-ignore
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-    if (!tgUser?.id) {
-        throw new Error("Не удалось получить данные пользователя Telegram. Пожалуйста, перезапустите приложение.");
-    }
-
     const headers = new Headers();
-    // ✅ Добавляем API ключ
-    headers.append('X-API-Key', API_KEY);
+    headers.append('X-Telegram-Init-Data', initData); // Главная защита
+    headers.append('X-Telegram-User-Id', String(tgUser.id)); // Для удобства на бэке
 
-    // Добавляем остальные заголовки
-    headers.append('X-Telegram-User-Id', String(tgUser.id));
-
-    const encodeHeader = (str: string) => {
-        try {
-            return btoa(unescape(encodeURIComponent(str)));
-        } catch (e) {
-            return btoa('unknown');
-        }
-    };
-
-    headers.append('X-Telegram-Username', encodeHeader(tgUser.username || 'unknown'));
-    headers.append('X-Telegram-First-Name', encodeHeader(tgUser.first_name || 'unknown'));
+    const encodeHeader = (str: string) => btoa(unescape(encodeURIComponent(str || '')));
+    headers.append('X-Telegram-Username', encodeHeader(tgUser.username));
+    headers.append('X-Telegram-First-Name', encodeHeader(tgUser.first_name));
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/start-face-swap`, {
@@ -45,12 +41,10 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: "Произошла неизвестная ошибка на сервере." }));
-            throw new Error(errorData.detail || "Не удалось отправить запрос.");
+            const errorData = await response.json().catch(() => ({ detail: "Произошла неизвестная ошибка." }));
+            throw new Error(errorData.detail);
         }
-
         return await response.json();
-
     } catch (error) {
         console.error("Failed to start face swap task:", error);
         throw error;
@@ -61,20 +55,15 @@ export const startFaceSwapTask = async (file: File): Promise<{ job_id: string, r
  * Проверяет статус задачи на сервере.
  */
 export const getTaskStatus = async (jobId: string): Promise<any> => {
+    const headers = new Headers();
+    headers.append('X-Telegram-Init-Data', getTelegramInitData());
+
     try {
-        const headers = new Headers();
-        // ✅ Добавляем API ключ
-        headers.append('X-API-Key', API_KEY);
-
-        const response = await fetch(`${API_BASE_URL}/api/task-status/${jobId}`, {
-            headers: headers
-        });
-
+        const response = await fetch(`${API_BASE_URL}/api/task-status/${jobId}`, { headers });
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: "Задача не найдена или произошла ошибка." }));
+            const errorData = await response.json().catch(() => ({ detail: "Задача не найдена." }));
             throw new Error(errorData.detail);
         }
-
         return await response.json();
     } catch (error) {
         console.error(`Failed to get status for job ${jobId}:`, error);
@@ -84,21 +73,14 @@ export const getTaskStatus = async (jobId: string): Promise<any> => {
 
 /**
  * Отправляет запрос на бэкенд, чтобы тот прислал готовое фото в чат с ботом.
- * @param imageUrl - URL готового изображения.
  */
 export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: string }> => {
+    const initData = getTelegramInitData();
     // @ts-ignore
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-    if (!tgUser?.id) {
-        throw new Error("Не удалось получить данные пользователя Telegram для отправки фото.");
-    }
-
     const headers = new Headers();
-    // ✅ Добавляем API ключ
-    headers.append('X-API-Key', API_KEY);
-
-    // Добавляем остальные заголовки
+    headers.append('X-Telegram-Init-Data', initData);
     headers.append('Content-Type', 'application/json');
     headers.append('X-Telegram-User-Id', String(tgUser.id));
 
@@ -108,14 +90,11 @@ export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: strin
             headers: headers,
             body: JSON.stringify({ imageUrl: imageUrl }),
         });
-
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: "Сервер вернул ошибку при отправке фото" }));
+            const errorData = await response.json().catch(() => ({ detail: "Ошибка при отправке фото" }));
             throw new Error(errorData.detail);
         }
-
         return await response.json();
-
     } catch (error) {
         console.error("Ошибка при запросе на отправку фото в чат:", error);
         throw error;
