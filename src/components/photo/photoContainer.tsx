@@ -32,29 +32,20 @@ const PhotoContainer = () => {
 
     const startPolling = (currentJobId: string) => {
         if (isPolling || intervalRef.current) return;
-
-        // Устанавливаем начальное сообщение
         setLoadingMessage('⏳ Уменьшаю ваше фото и подбираю образ...');
-
         setIsPolling(true);
         pollingStartTimeRef.current = Date.now();
-
         intervalRef.current = setInterval(async () => {
             if (Date.now() - (pollingStartTimeRef.current ?? 0) > POLLING_TIMEOUT_SECONDS * 1000) {
-                console.error("⏱️ Таймаут опроса истек.");
                 alert("Время ожидания результата истекло. Пожалуйста, попробуйте еще раз.");
                 handleClear();
                 return;
             }
             try {
                 const data = await getTaskStatus(currentJobId);
-                console.log(`⌛ Статус задачи [${currentJobId}]: ${data.status}, Сообщение: ${data.message}`);
-
-                // ✅ 2. ГЛАВНОЕ ИЗМЕНЕНИЕ: Обновляем сообщение для пользователя
                 if (data.message) {
                     setLoadingMessage(data.message);
                 }
-
                 if (data.status === "completed") {
                     stopPolling();
                     setResultUrl(data.result_url);
@@ -67,6 +58,10 @@ const PhotoContainer = () => {
                     return;
                 }
                 if (data.status === "failed") {
+                    // ✅ НОВАЯ ЛОГИКА: Показываем конкретное сообщение об ошибке
+                    // Мы не используем data.error_code здесь, так как бэкенд уже формирует
+                    // готовое сообщение для пользователя в поле data.error.
+                    // alert() просто покажет это сообщение.
                     alert(`Ошибка генерации: ${data.error || "Неизвестная ошибка на сервере"}`);
                     handleClear();
                     return;
