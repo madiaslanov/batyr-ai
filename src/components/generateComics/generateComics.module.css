@@ -1,5 +1,6 @@
 .genPage{
     height: 100vh;
+    min-height: 100svh;
     background-image: url("/generatePage/bg.png");
     background-repeat: no-repeat;
     background-position: center;
