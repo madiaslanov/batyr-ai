@@ -1,11 +1,11 @@
-// PhotoContainer.tsx
-import { useEffect, useRef, useState } from "react";
-import { useBatyrStore } from "./module/useBatyrStore.ts";
-// ✅ Импортируем новую функцию и удаляем старую
-import { getTaskStatus, startFaceSwapTask, sendPhotoToChat } from "./api";
-import Photo from "./ui/photo.tsx";
+// src/components/PhotoContainer.tsx
 
-const POLLING_TIMEOUT_SECONDS = 180;
+import { useEffect, useRef, useState } from "react";
+import Photo from "./ui/photo.tsx";
+import {type Gender, useBatyrStore} from "./module/useBatyrStore.ts";
+import {getTaskStatus, sendPhotoToChat, startFaceSwapTask} from "./api";
+
+const POLLING_TIMEOUT_SECONDS = 100;
 
 const PhotoContainer = () => {
     const {
@@ -18,9 +18,9 @@ const PhotoContainer = () => {
         clearAll,
         isPolling, setIsPolling,
         loadingMessage, setLoadingMessage,
+        gender, setGender,
     } = useBatyrStore();
 
-    // ✅ Переименовано для ясности
     const [isSending, setIsSending] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const pollingStartTimeRef = useRef<number | null>(null);
@@ -107,7 +107,7 @@ const PhotoContainer = () => {
         setResultUrl(null);
         clearLocalStorage();
         try {
-            const data = await startFaceSwapTask(userPhoto);
+            const data = await startFaceSwapTask(userPhoto, gender);
             if (data.job_id) {
                 setJobId(data.job_id);
                 localStorage.setItem("batyr_job_id", data.job_id);
@@ -123,23 +123,40 @@ const PhotoContainer = () => {
         }
     };
 
+    // Функция handleClear используется кнопкой "Очистить" и должна сбрасывать все.
+    // Она работает правильно. Проблема была в ее вызове из handleFileChange.
     const handleClear = () => {
         stopPolling();
         clearLocalStorage();
         clearAll();
     };
 
+
+    // =================================================================
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ
+    // =================================================================
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            handleClear();
+            // НЕ вызываем handleClear() или clearAll()
+
+            // Вместо этого, вручную сбрасываем только то, что нужно:
+            // предыдущие результаты и состояние загрузки.
+            stopPolling();
+            clearLocalStorage();
+            setResultUrl(null);
+            setJobId(null);
+            setLoading(false);
+            setStep(1); // Убедимся, что мы на первом шаге
+
+            // А теперь устанавливаем новое фото. Состояние `gender` не трогаем.
             const previewUrl = URL.createObjectURL(file);
             setUserPhoto(file);
             setPreview(previewUrl);
         }
     };
+    // =================================================================
 
-    // ✅ ИЗМЕНЕНО: Функция теперь отправляет фото в чат
     const handleSendToChat = async () => {
         if (!resultUrl || isSending) return;
         setIsSending(true);
@@ -153,6 +170,10 @@ const PhotoContainer = () => {
         }
     };
 
+    const handleGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setGender(e.target.value as Gender);
+    };
+
     return (
         <Photo
             step={step}
@@ -163,9 +184,11 @@ const PhotoContainer = () => {
             onNext={handleNext}
             onClear={handleClear}
             onFileChange={handleFileChange}
-            onSendToChat={handleSendToChat} // ✅ Передаем новый обработчик
-            isSending={isSending} // ✅ Передаем новое состояние
+            onSendToChat={handleSendToChat}
+            isSending={isSending}
             loadingMessage={loadingMessage}
+            gender={gender}
+            onGenderChange={handleGenderChange}
         />
     );
 };

@@ -1,0 +1,65 @@
+.wrapper {
+    position: relative;
+    width: 80%;
+    max-width: 250px;
+    margin: 0 auto;
+}
+
+.selectTrigger {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selectTrigger.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #fff;
+    transition: transform 0.2s ease-in-out;
+}
+
+.arrow.arrowUp {
+    transform: rotate(180deg);
+}
+
+
+.optionsContainer {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #444;
+    border: 1px solid #555;
+    border-radius: 8px;
+    margin-top: 5px;
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.option {
+    padding: 10px;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+}
+
+.option:hover {
+    background-color: #5a6268;
+}

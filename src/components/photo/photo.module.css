@@ -136,6 +136,52 @@
     margin-top: 20px;
     text-align: center;
 }
+.genderSelector {
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #f0f0f0;
+}
+
+.genderSelector label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+
+.select {
+    width: 80%;
+    max-width: 250px; /* Добавим максимальную ширину для больших экранов */
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+
+    /* Новые стили для обрезки текста */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.select:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+
+.select option {
+    background-color: #333; /* Чтобы фон выпадающего списка был темным */
+    color: #fff;
+    width: 100px;
+}
 
 .button {
     background-color: #C2A14D;

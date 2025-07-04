@@ -1,6 +1,9 @@
 // src/module/useBatyrStore.ts
 import { create } from 'zustand';
 
+// Определяем типы для пола
+export type Gender = 'male' | 'female';
+
 // Определяем интерфейс для нашего состояния
 interface BatyrState {
     step: 1 | 2;
@@ -10,7 +13,8 @@ interface BatyrState {
     loading: boolean;
     isPolling: boolean;
     jobId: string | null;
-    loadingMessage: string; // ✅ НОВОЕ СОСТОЯНИЕ для текста загрузки
+    loadingMessage: string;
+    gender: Gender; // Состояние для хранения пола
 
     // Методы для изменения состояния (сеттеры)
     setStep: (step: 1 | 2) => void;
@@ -20,7 +24,8 @@ interface BatyrState {
     setLoading: (loading: boolean) => void;
     setIsPolling: (isPolling: boolean) => void;
     setJobId: (id: string | null) => void;
-    setLoadingMessage: (message: string) => void; // ✅ НОВЫЙ СЕТТЕР
+    setLoadingMessage: (message: string) => void;
+    setGender: (gender: Gender) => void; // Сеттер для пола
 
     // Метод для полного сброса состояния
     clearAll: () => void;
@@ -36,7 +41,8 @@ export const useBatyrStore = create<BatyrState>((set) => ({
     loading: false,
     isPolling: false,
     jobId: null,
-    loadingMessage: '⏳ Генерация изображения...', // ✅ Начальное значение по умолчанию
+    loadingMessage: '⏳ Генерация изображения...',
+    gender: 'male', // Начальное значение
 
     // Определяем сеттеры
     setStep: (step) => set({ step }),
@@ -46,7 +52,8 @@ export const useBatyrStore = create<BatyrState>((set) => ({
     setLoading: (loading) => set({ loading }),
     setIsPolling: (isPolling) => set({ isPolling }),
     setJobId: (id) => set({ jobId: id }),
-    setLoadingMessage: (message) => set({ loadingMessage: message }), // ✅ Реализация сеттера
+    setLoadingMessage: (message) => set({ loadingMessage: message }),
+    setGender: (gender) => set({ gender }), // Реализация сеттера
 
     // Метод clearAll теперь сбрасывает и новое состояние
     clearAll: () => set({
@@ -57,6 +64,7 @@ export const useBatyrStore = create<BatyrState>((set) => ({
         loading: false,
         isPolling: false,
         jobId: null,
-        loadingMessage: '⏳ Генерация изображения...', // ✅ Сбрасываем к значению по умолчанию
+        loadingMessage: '⏳ Генерация изображения...',
+        gender: 'male', // Сбрасываем к значению по умолчанию
     }),
 }));

@@ -1,18 +1,27 @@
-import styles from "../photo.module.css";
+// src/components/ui/photo.tsx
 
-// 1. Изменяем тип пропсов
+import styles from "../photo.module.css";
+import type {Gender} from "../module/useBatyrStore.ts";
+import CustomSelect from "../../../shared/CustomSelect.tsx";
+
+// Определяем тип пропсов для компонента
 type PhotoUIProps = {
     step: 1 | 2;
     userPhoto: File | null;
     preview: string | null;
     resultUrl: string | null;
     loading: boolean;
-    isSending: boolean; // ✅ Вместо isDownloading
+    isSending: boolean;
     loadingMessage: string;
+    gender: Gender;
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onClear: () => void;
     onNext: () => void;
-    onSendToChat: () => void; // ✅ Вместо onDownload
+    onSendToChat: () => void;
+    // 2. ВАЖНО: Тип onGenderChange нужно будет адаптировать в контейнере
+    // или здесь сделать его более общим, например, onGenderChange: (value: Gender) => void;
+    // Для простоты оставим как в оригинале, но адаптируем вызов ниже.
+    onGenderChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 };
 
 const Photo = ({
@@ -21,13 +30,31 @@ const Photo = ({
                    preview,
                    resultUrl,
                    loading,
-                   isSending, // ✅ Принимаем isSending
+                   isSending,
                    loadingMessage,
+                   gender,
                    onFileChange,
                    onClear,
                    onNext,
-                   onSendToChat, // ✅ Принимаем onSendToChat
+                   onSendToChat,
+                   onGenderChange
                }: PhotoUIProps) => {
+
+    // 3. Определяем массив опций для нашего кастомного селекта
+    const genderOptions = [
+        { value: 'male', label: 'Батыр (Мужчина)' },
+        { value: 'female', label: 'Батыр-қыз (Женщина)' },
+    ];
+
+    // 4. Создаем обертку для onGenderChange, чтобы соответствовать интерфейсу CustomSelect
+    const handleCustomSelectChange = (value: string) => {
+        // Мы эмулируем событие ChangeEvent, чтобы соответствовать ожидаемому типу
+        // в родительском компоненте (PhotoContainer).
+        const event = {
+            target: { value }
+        } as React.ChangeEvent<HTMLSelectElement>;
+        onGenderChange(event);
+    };
 
     return (
         <div className={styles.container}>
@@ -41,6 +68,7 @@ const Photo = ({
                 </div>
             </div>
 
+            {/* --- Шаг 1: Выбор фото и образа --- */}
             {step === 1 && (
                 <>
                     {!userPhoto && (
@@ -54,6 +82,19 @@ const Photo = ({
                             <img src={preview} alt="Превью" className={styles.previewImage}/>
                         </div>
                     )}
+
+                    {/* 5. Заменяем <select> на <CustomSelect> */}
+                    <div className={styles.genderSelector}>
+                        <label>Выберите образ:</label> {/* htmlFor больше не нужен, т.к. нет id */}
+                        <CustomSelect
+                            options={genderOptions}
+                            value={gender}
+                            onChange={handleCustomSelectChange}
+                            disabled={!!userPhoto}
+                        />
+                    </div>
+
+                    {/* Кнопки управления */}
                     <div className={styles.buttonGroup}>
                         <button className={styles.button} onClick={onClear}>Очистить</button>
                         <button className={styles.button} onClick={onNext} disabled={loading || !userPhoto}>
@@ -63,6 +104,7 @@ const Photo = ({
                 </>
             )}
 
+            {/* --- Шаг 2: Отображение процесса и результата --- */}
             {step === 2 && (
                 <>
                     <div className={styles.resultContainer}>
@@ -82,11 +124,10 @@ const Photo = ({
                     <div className={styles.buttonGroup}>
                         {!loading && resultUrl && (
                             <>
-                                {/* ✅ 3. Модифицируем кнопку */}
                                 <button
                                     className={styles.button}
-                                    onClick={onSendToChat} // Используем новый обработчик
-                                    disabled={isSending} // Используем новое состояние
+                                    onClick={onSendToChat}
+                                    disabled={isSending}
                                 >
                                     {isSending ? '🚀 Отправка...' : 'Отправить в чат'}
                                 </button>
