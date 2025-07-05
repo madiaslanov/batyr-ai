@@ -141,7 +141,7 @@ body.keyboard-open nav {
     display: none;
 }
 
-@media (max-height: 600px) {
+@media (max-height: 500px) {
     nav{
         display: none;
     }

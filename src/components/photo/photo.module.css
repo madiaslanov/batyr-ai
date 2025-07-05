@@ -286,3 +286,23 @@
         height: 44px;
     }
 }
+
+@media (max-height: 640px) {
+    .inputIcon {
+        width: 180px;
+        height: 180px;
+    }
+    .buttonGroup{
+        margin-top: 30px;
+    }
+}
+
+@media (max-height: 585px) {
+    .inputIcon {
+        width: 150px;
+        height: 150px;
+    }
+    .buttonGroup{
+        margin-top: 30px;
+    }
+}
