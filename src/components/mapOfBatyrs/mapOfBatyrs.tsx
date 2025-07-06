@@ -15,7 +15,7 @@ interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; 
 
 const MapOfBatyrs = () => {
     const API_URL = 'https://api.batyrai.com';
-    // asl
+
     const [regionData, setRegionData] = useState<RegionData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -23,15 +23,17 @@ const MapOfBatyrs = () => {
     const textToReadRef = useRef<string>('');
     const mapInitialized = useRef(false);
 
-    // Эта функция будет вызываться напрямую из mapdata.js через глобальный объект window
+    // ✅ НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ УПРАВЛЕНИЯ АУДИО
+    const audioRef = useRef<HTMLAudioElement | null>(null); // Ссылка на наш <audio> элемент
+    const [isAudioLoading, setIsAudioLoading] = useState(false); // Состояние загрузки аудио
+
+    // Функция для получения данных о регионе (без изменений)
     const handleRegionClick = useCallback(async (regionId: string) => {
         console.log(`✅ Клик из mapdata.js! ▶️ Запрос для региона: ${regionId}`);
-
+        handleStopAudio(); // Останавливаем озвучку от предыдущего региона
         setRegionData(null);
         setError(null);
         setLoading(true);
-        speechSynthesis.cancel();
-        setIsSpeaking(false);
         try {
             const response = await fetch(`${API_URL}/api/region/${regionId}`);
             if (!response.ok) {
@@ -49,23 +51,20 @@ const MapOfBatyrs = () => {
         } finally {
             setLoading(false);
         }
-    }, [API_URL]);
+    }, []); // API_URL константа, ее можно не включать в зависимости
 
-    // Упрощенный useEffect, использующий глобальную функцию
+    // useEffect для инициализации карты (без изменений)
     useEffect(() => {
-        // "Выставляем" нашу React-функцию в глобальный доступ, чтобы mapdata.js мог ее вызвать
         window.handleMapClick = handleRegionClick;
 
         if (mapInitialized.current) return;
         mapInitialized.current = true;
 
-        // Вспомогательная функция, чтобы не дублировать код
         const loadScript = (id: string, src: string, onLoad?: () => void) => {
             if (document.getElementById(id)) {
-                // Если скрипт уже есть, просто вызываем callback
                 if (onLoad) onLoad();
                 return;
-            };
+            }
             const script = document.createElement('script');
             script.id = id;
             script.src = src;
@@ -81,8 +80,6 @@ const MapOfBatyrs = () => {
             document.head.appendChild(cssLink);
         }
 
-        // Просто загружаем скрипты в правильном порядке.
-        // Никаких 'hooks' и 'setInterval' больше не нужно.
         loadScript('simplemaps-mapdata-script', '/mapdata.js', () => {
             console.log("✔️ Скрипт с данными (mapdata.js) загружен.");
             loadScript('simplemaps-countrymap-script', '/countrymap.js', () => {
@@ -90,27 +87,72 @@ const MapOfBatyrs = () => {
             });
         });
 
-        // Функция очистки: удаляем глобальную функцию, когда компонент исчезает
         return () => {
             window.handleMapClick = undefined;
         };
     }, [handleRegionClick]);
 
-    const handlePlayAudio = () => {
-        if (!textToReadRef.current || !('speechSynthesis' in window)) return;
-        speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(textToReadRef.current);
-        const voices = speechSynthesis.getVoices();
-        utterance.voice = voices.find(voice => voice.lang === 'kk-KZ') || voices.find(voice => voice.lang === 'ru-RU') || voices[0];
-        utterance.lang = utterance.voice?.lang || 'ru-RU';
-        utterance.onstart = () => setIsSpeaking(true);
-        utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-        speechSynthesis.speak(utterance);
+    // ✅ ОБНОВЛЕННАЯ ЛОГИКА ОЗВУЧКИ ЧЕРЕЗ БЭКЕНД
+    const handlePlayAudio = async () => {
+        if (!textToReadRef.current || isAudioLoading) return;
+
+        handleStopAudio(); // Останавливаем предыдущее аудио, если оно есть
+        setIsAudioLoading(true);
+        setIsSpeaking(false);
+        setError(null); // Сбрасываем старые ошибки
+
+        try {
+            const response = await fetch(`${API_URL}/api/tts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: textToReadRef.current }),
+            });
+
+            if (!response.ok) {
+                const errorDetails = await response.json();
+                console.error("Сервер вернул ошибку при синтезе речи:", errorDetails);
+                throw new Error('Сервер не смог сгенерировать аудио.');
+            }
+
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            // Создаем и проигрываем аудио
+            const audio = new Audio(audioUrl);
+            audioRef.current = audio;
+
+            audio.onplay = () => {
+                console.log("▶️ Воспроизведение аудио началось");
+                setIsSpeaking(true);
+            }
+            audio.onended = () => {
+                console.log("⏹️ Воспроизведение аудио завершено");
+                setIsSpeaking(false);
+            };
+            audio.onerror = (e) => {
+                console.error("Ошибка воспроизведения аудио:", e);
+                setIsSpeaking(false);
+                setError("Аудиофайлды ойнату мүмкін болмады.");
+            };
+
+            audio.play();
+
+        } catch (err) {
+            console.error("Ошибка при получении аудио:", err);
+            setError("Өкінішке орай, аудионы жүктеу мүмкін болмады.");
+        } finally {
+            setIsAudioLoading(false);
+        }
     };
 
     const handleStopAudio = () => {
-        speechSynthesis.cancel();
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            // Освобождаем ссылку, чтобы сборщик мусора мог удалить объект
+            URL.revokeObjectURL(audioRef.current.src);
+            audioRef.current = null;
+        }
         setIsSpeaking(false);
     };
 
@@ -134,7 +176,10 @@ const MapOfBatyrs = () => {
                         <h2>{regionData.region_name}</h2>
                         <p className={style.mainText}>{regionData.main_text}</p>
                         <div className={style.buttons}>
-                            {!isSpeaking ? (
+                            {/* ✅ ОБНОВЛЕННЫЙ БЛОК КНОПОК С СОСТОЯНИЕМ ЗАГРУЗКИ */}
+                            {isAudioLoading ? (
+                                <button className={style.button} disabled>⏳ Жүктелуде...</button>
+                            ) : !isSpeaking ? (
                                 <button onClick={handlePlayAudio} className={style.button}>🔊 Оқу</button>
                             ) : (
                                 <button onClick={handleStopAudio} className={`${style.button} ${style.stopButton}`}>🔇 Тоқтату</button>
@@ -142,11 +187,10 @@ const MapOfBatyrs = () => {
                         </div>
                         <h3>Осы өңірдің батырлары</h3>
                         <div className={style.listContainer}>
-                            {/* ✅↓↓↓ ГЛАВНОЕ ИЗМЕНЕНИЕ ЗДЕСЬ ↓↓↓✅ */}
                             {regionData.batyrs.map((batyr, index) => (
                                 <div key={`${batyr.name}-${index}`} className={style.batyrCard}>
                                     <img
-                                        src={batyr.image || '/batyr-placeholder.png'} // Используем фото батыра или заглушку
+                                        src={batyr.image || '/batyr-placeholder.png'}
                                         alt={`Портрет ${batyr.name}`}
                                         className={style.batyrImage}
                                     />
