@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import style from './MapOfBatyrs.module.css';
+import style from './mapOfBatyrs.module.css';
 
 // Объявляем нашу будущую глобальную функцию, чтобы TypeScript ее "видел"
 declare global {
