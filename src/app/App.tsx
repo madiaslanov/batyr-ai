@@ -1,5 +1,3 @@
-// src/App.tsx (ИСПРАВЛЕННАЯ ВЕРСИЯ)
-
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ReactGA from "react-ga4";
@@ -8,9 +6,21 @@ import Layout from "../features/layout/layout.tsx";
 
 const TRACKING_ID = "G-2J5SZSQH87";
 
+// ✅ ОБНОВЛЕНО: Описываем интерфейс WebApp для TypeScript
 declare global {
     interface Window {
-        Telegram: any;
+        Telegram: {
+            WebApp: {
+                ready: () => void;
+                expand: () => void;
+                enableClosingConfirmation: () => void;
+                setBackgroundColor: (color: string) => void;
+                setHeaderColor: (color: string) => void;
+                initDataUnsafe?: {
+                    start_param?: string;
+                };
+            };
+        };
     }
 }
 
@@ -37,23 +47,43 @@ function App() {
 
     // 4. Работа с Telegram WebApp
     useEffect(() => {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            tg.setBackgroundColor('#f4f1e9'); // Установим цвет фона, как у карты
+        // Проверяем, что объект Telegram.WebApp существует
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
 
+            // Сообщаем Telegram, что приложение готово к отображению
+            tg.ready();
+
+            // ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ: Растягиваем окно на весь экран
+            tg.expand();
+            console.log("🚀 Telegram Web App expanded to full screen.");
+
+            // ✅ РЕКОМЕНДАЦИЯ: Включаем подтверждение закрытия для лучшего UX
+            tg.enableClosingConfirmation();
+
+            // Устанавливаем цвета, чтобы приложение выглядело как часть Telegram
+            tg.setBackgroundColor('#f4f1e9'); // Цвет фона, как у вашей карты
+            tg.setHeaderColor('#3a2d21');    // Темно-коричневый для шапки
+
+            // Обработка deeplink-параметров (start_param)
             const startParam = tg.initDataUnsafe?.start_param;
-            if (startParam === 'generatePhoto') {
-                navigate('/generatePhoto');
-            } else if (startParam === 'mapOfBatyrs') {
-                navigate('/mapOfBatyrs');
+            if (startParam) {
+                console.log(`Deep link parameter detected: ${startParam}`);
+                if (startParam === 'generatePhoto') {
+                    navigate('/generatePhoto', { replace: true });
+                } else if (startParam === 'mapOfBatyrs') {
+                    navigate('/mapOfBatyrs', { replace: true });
+                }
             }
         }
-    }, [navigate]);
+    }, [navigate]); // navigate в зависимостях, так как используется внутри
 
-    if (isMobile === null) return null;
+    // Пока идет проверка на мобильное устройство, ничего не рендерим
+    if (isMobile === null) {
+        return null;
+    }
 
+    // Если не мобильное устройство, показываем заглушку
     if (!isMobile) {
         return (
             <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '1rem' }}>
@@ -65,14 +95,10 @@ function App() {
         );
     }
 
+    // Основная маршрутизация приложения
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
-                {/* 
-                  ✅ ИСПРАВЛЕНО:
-                  Убраны все `key`, чтобы обеспечить один постоянный экземпляр SwipeRouter.
-                  Теперь он будет плавно реагировать на смену URL, а не пересоздаваться.
-                */}
                 <Route index element={<SwipeRouter />} />
                 <Route path="generatePhoto" element={<SwipeRouter />} />
                 <Route path="mapOfBatyrs" element={<SwipeRouter />} />
