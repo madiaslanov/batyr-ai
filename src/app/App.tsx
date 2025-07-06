@@ -6,7 +6,7 @@ import Layout from "../features/layout/layout.tsx";
 
 const TRACKING_ID = "G-2J5SZSQH87";
 
-// ✅ ОБНОВЛЕНО: Добавляем больше типов для WebApp для полного контроля
+// ✅ ОБНОВЛЕНО: Описываем интерфейс WebApp для TypeScript
 declare global {
     interface Window {
         Telegram: {
@@ -16,14 +16,6 @@ declare global {
                 enableClosingConfirmation: () => void;
                 setBackgroundColor: (color: string) => void;
                 setHeaderColor: (color: string) => void;
-                MainButton: {
-                    isVisible: boolean;
-                    show: () => void;
-                    hide: () => void;
-                    setText: (text: string) => void;
-                };
-                onEvent: (eventType: 'viewportChanged', callback: (isStable: boolean) => void) => void;
-                offEvent: (eventType: 'viewportChanged', callback: (isStable: boolean) => void) => void;
                 initDataUnsafe?: {
                     start_param?: string;
                 };
@@ -37,50 +29,46 @@ function App() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // 1. Инициализация Google Analytics (без изменений)
+    // 1. Инициализация Google Analytics
     useEffect(() => {
         ReactGA.initialize(TRACKING_ID);
     }, []);
 
-    // 2. Отправка просмотров страниц (без изменений)
+    // 2. Отправка просмотров страниц
     useEffect(() => {
         ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
     }, [location]);
 
-    // 3. Проверка устройства (без изменений)
+    // 3. Проверка устройства
     useEffect(() => {
         const checkIsMobile = () => /Mobi|Android|iPhone/i.test(navigator.userAgent);
         setIsMobile(checkIsMobile());
     }, []);
 
-    // 4. ✅ ОБНОВЛЕННЫЙ useEffect для Telegram для полного погружения
+    // 4. Работа с Telegram WebApp
     useEffect(() => {
+        // Проверяем, что объект Telegram.WebApp существует
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
 
-            // Сообщаем, что готовы, и сразу разворачиваем окно
+            // Сообщаем Telegram, что приложение готово к отображению
             tg.ready();
-            tg.expand();
 
-            // Настраиваем цвета для бесшовной интеграции
+            // ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ: Растягиваем окно на весь экран
+            tg.expand();
+            console.log("🚀 Telegram Web App expanded to full screen.");
+
+            // ✅ РЕКОМЕНДАЦИЯ: Включаем подтверждение закрытия для лучшего UX
+            tg.enableClosingConfirmation();
+
+            // Устанавливаем цвета, чтобы приложение выглядело как часть Telegram
             tg.setBackgroundColor('#f4f1e9'); // Цвет фона, как у вашей карты
             tg.setHeaderColor('#3a2d21');    // Темно-коричневый для шапки
 
-            // Включаем подтверждение закрытия, чтобы предотвратить случайное закрытие
-            tg.enableClosingConfirmation();
-
-            // "Хак" для скрытия нижней панели Telegram:
-            // Мы на короткое время показываем, а затем прячем MainButton.
-            // Это заставляет Telegram скрыть свою стандартную нижнюю панель.
-            if (!tg.MainButton.isVisible) {
-                tg.MainButton.setText(' '); // Устанавливаем пустой текст
-                tg.MainButton.show();
-                setTimeout(() => tg.MainButton.hide(), 50);
-            }
-
-            // Обработка deeplink-параметров (без изменений)
+            // Обработка deeplink-параметров (start_param)
             const startParam = tg.initDataUnsafe?.start_param;
             if (startParam) {
+                console.log(`Deep link parameter detected: ${startParam}`);
                 if (startParam === 'generatePhoto') {
                     navigate('/generatePhoto', { replace: true });
                 } else if (startParam === 'mapOfBatyrs') {
@@ -88,12 +76,14 @@ function App() {
                 }
             }
         }
-    }, [navigate]);
+    }, [navigate]); // navigate в зависимостях, так как используется внутри
 
+    // Пока идет проверка на мобильное устройство, ничего не рендерим
     if (isMobile === null) {
         return null;
     }
 
+    // Если не мобильное устройство, показываем заглушку
     if (!isMobile) {
         return (
             <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '1rem' }}>
@@ -105,6 +95,7 @@ function App() {
         );
     }
 
+    // Основная маршрутизация приложения
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
