@@ -15,7 +15,7 @@ interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; 
 
 const MapOfBatyrs = () => {
     const API_URL = 'https://api.batyrai.com';
-
+    // asl
     const [regionData, setRegionData] = useState<RegionData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
