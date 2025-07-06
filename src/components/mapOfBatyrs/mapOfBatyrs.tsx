@@ -14,7 +14,7 @@ interface HistoricalEvent { name: string; period: string; description: string; }
 interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; historical_events: HistoricalEvent[]; }
 
 const MapOfBatyrs = () => {
-    const API_URL = 'http://192.168.1.200:5000';
+    const API_URL = 'https://api.batyrai.com';
 
     const [regionData, setRegionData] = useState<RegionData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
