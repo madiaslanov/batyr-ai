@@ -1,68 +1,68 @@
+// src/features/swiper/SwipeRouter.tsx
+
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import GenerateComics from "../../components/generateComics/generateComics";
+import { useEffect, useRef } from 'react';
 import SwiperCore from 'swiper';
-import 'swiper/css';
-import {BatyrContainer} from "../../components/batyr/batyrContainer.tsx";
-import PhotoContainer from "../../components/photo/photoContainer.tsx";
 
-const pages = ['/generatePhoto', '/', '/generateComics'];
+// Стили Swiper
+import 'swiper/css';
+
+// Ваши компоненты страниц
+import { BatyrContainer } from "../../components/batyr/batyrContainer.tsx";
+import PhotoContainer from "../../components/photo/photoContainer.tsx";
+import MapOfBatyrs from "../../components/mapOfBatyrs/mapOfBatyrs.tsx";
+
+// Единственный источник правды о порядке страниц
+const pages = ['/generatePhoto', '/', '/mapOfBatyrs'];
 
 export default function SwipeRouter() {
     const location = useLocation();
     const navigate = useNavigate();
     const swiperRef = useRef<SwiperCore | null>(null);
-    const [currentIndex, setCurrentIndex] = useState(1); // Batyr по центру
+    const isNavigatingRef = useRef(false); // Флаг, чтобы избежать двойных срабатываний
 
-    // Устанавливаем страницу при загрузке и запрещаем свайп влево/вправо по краям
+    // Определяем активный индекс СТРОГО по URL
+    const activeIndex = pages.indexOf(location.pathname);
+
+    // Эффект для синхронизации: URL изменился -> Swiper должен среагировать
     useEffect(() => {
-        const index = pages.indexOf(location.pathname);
-        if (index !== -1 && swiperRef.current) {
-            swiperRef.current.slideTo(index, 1000);
-            swiperRef.current.allowSlidePrev = index > 0;
-            swiperRef.current.allowSlideNext = index < pages.length - 1;
-            setCurrentIndex(index);
+        if (swiperRef.current && swiperRef.current.activeIndex !== activeIndex) {
+            isNavigatingRef.current = true; // Сообщаем, что навигация идет программно
+            swiperRef.current.slideTo(activeIndex, 300); // Плавно переходим на нужный слайд
         }
-    }, [location.pathname]);
+    }, [activeIndex]);
 
-    // При свайпе меняем маршрут и блокируем границы
+    // Функция для синхронизации: Пользователь свайпнул -> URL должен измениться
     const handleSlideChange = (swiper: SwiperCore) => {
-        const newIndex = swiper.activeIndex;
-
-        // Блокируем свайп за 1 и 3
-        swiper.allowSlidePrev = newIndex > 0;
-        swiper.allowSlideNext = newIndex < pages.length - 1;
-
-        if (newIndex !== currentIndex && Math.abs(newIndex - currentIndex) === 1) {
-            const newRoute = pages[newIndex];
-            navigate(newRoute);
-            setCurrentIndex(newIndex);
-        } else if (Math.abs(newIndex - currentIndex) > 1) {
-            swiper.slideTo(currentIndex); // запрет прыжка через несколько страниц
+        // Если навигация была программной, игнорируем этот вызов
+        if (isNavigatingRef.current) {
+            isNavigatingRef.current = false;
+            return;
+        }
+        // Обновляем URL в соответствии со свайпом пользователя
+        const newPath = pages[swiper.activeIndex];
+        if (location.pathname !== newPath) {
+            navigate(newPath);
         }
     };
 
     return (
         <Swiper
+            // Инициализация Swiper
             onSwiper={(swiper) => {
                 swiperRef.current = swiper;
-                const index = pages.indexOf(location.pathname);
-                swiper.slideTo(index, 0);
-                swiper.allowSlidePrev = index > 0;
-                swiper.allowSlideNext = index < pages.length - 1;
-                setCurrentIndex(index);
             }}
-            onSlideChange={handleSlideChange}
-            slidesPerView={1}
-            resistanceRatio={0.85}
-            threshold={20}
-            allowTouchMove={true}
+            // Устанавливаем начальный слайд в соответствии с URL
+            initialSlide={activeIndex}
+            // Вызывается, когда пользователь ЗАКОНЧИЛ свайп
+            onSlideChangeTransitionEnd={handleSlideChange}
             style={{ height: '100%', width: '100%' }}
         >
-            <SwiperSlide style={{ height: '100%' }}><PhotoContainer /></SwiperSlide>
-            <SwiperSlide style={{ height: '100%' }}><BatyrContainer /></SwiperSlide>
-            <SwiperSlide style={{ height: '100%' }}><GenerateComics /></SwiperSlide>
+            {/* Порядок слайдов должен СТРОГО соответствовать порядку в массиве `pages` */}
+            <SwiperSlide><PhotoContainer /></SwiperSlide>
+            <SwiperSlide><BatyrContainer /></SwiperSlide>
+            <SwiperSlide><MapOfBatyrs /></SwiperSlide>
         </Swiper>
     );
 }

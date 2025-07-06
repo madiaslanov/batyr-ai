@@ -295,6 +295,10 @@
     .buttonGroup{
         margin-top: 30px;
     }
+    .resultImage{
+        width: 150px;
+        height: 150px;
+    }
 }
 
 @media (max-height: 585px) {
