@@ -15,13 +15,3 @@ html, body {
     height: 100%;
 }
 
-#root, .App, .pageContainer { /* Применяем ко всем возможным корневым элементам */
-    /*
-      var(--tg-viewport-stable-height) — это специальная переменная,
-      которую telegram-web-app.js добавляет в :root.
-      Она содержит высоту окна ПОСЛЕ того, как оно развернулось.
-      100vh не всегда работает правильно, а эта переменная — да.
-    */
-    height: var(--tg-viewport-stable-height, 100vh);
-    overflow: hidden; /* Предотвращаем "двойной" скролл */
-}
