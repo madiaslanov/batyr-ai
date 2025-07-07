@@ -19,33 +19,31 @@
     top: 0;
     left: 0;
     right: 0;
-    /* Отступ равен только высоте ВИДИМОЙ части навбара */
-    bottom: 109px;
+    /* Отступ равен высоте навбара ПЛЮС его финальное положение от низа */
+    bottom: calc(109px + var(--navbar-bottom-position));
 }
+
 
 
 /* --- 3. Навигационная панель --- */
 /* Она остается фиксированной, как вы и хотели */
 nav {
+    /* ✅✅✅ ГЛАВНОЕ ИЗМЕНЕНИЕ ✅✅✅ */
+    /* Создаем переменную, которая будет управлять зазором */
+    --gap-from-bottom: 10px; /* <--- ИЗМЕНЯЙТЕ ЭТО ЗНАЧЕНИЕ! (например, 5px, 10px, 15px) */
+
+    /* Высчитываем финальное положение от низа экрана */
+    --navbar-bottom-position: max(0px, calc(env(safe-area-inset-bottom) - (109px - var(--gap-from-bottom))));
+
     position: fixed;
-    bottom: 0;
+    /* Применяем вычисленное положение */
+    bottom: var(--navbar-bottom-position);
     left: 0;
     right: 0;
-
-    /* Устанавливаем ТОЛЬКО высоту видимой части */
-    height: 109px;
-
+    height: 109px; /* Высота видимой части остается прежней */
     background: #BFA75E;
     display: flex;
     z-index: 1000;
-
-    /* ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ:
-       Мы добавляем отступ, который "приподнимает" иконки,
-       но НЕ РАСТЯГИВАЕТ цветной фон навбара. */
-    padding-bottom: env(safe-area-inset-bottom);
-
-    /* box-sizing нужен, чтобы padding не увеличивал высоту */
-    box-sizing: content-box;
 }
 
 /* --- 4. Стили для ссылок и карточек (сохранены ваши стили) --- */
@@ -125,14 +123,14 @@ nav a:last-child .card::after { display: none; }
 /* --- 7. Адаптивность (исправлена логика) --- */
 @media (max-height: 850px) {
     nav {
-        /* Уменьшаем высоту видимой части */
+        --gap-from-bottom: 8px; /* Можно задать другой зазор для маленьких экранов */
         height: 80px;
+        /* Пересчитываем положение для новой высоты */
+        --navbar-bottom-position: max(0px, calc(env(safe-area-inset-bottom) - (80px - var(--gap-from-bottom))));
     }
 
-    /* Контент теперь тоже знает новую высоту навбара */
     .mainContent {
-        /* Контент знает только о видимой высоте */
-        bottom: 80px;
+        bottom: calc(80px + var(--navbar-bottom-position));
     }
     .card img {
         width: 60px;
