@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import style from './MapOfBatyrs.module.css';
-// Мы импортируем хук из другого файла, но его код также предоставлен ниже
+import {useMapSpeech} from "../../service/reactHooks/useMapSpeech.ts";
 
 // Объявляем нашу будущую глобальную функцию, чтобы TypeScript ее "видел"
 declare global {
@@ -158,7 +158,7 @@ const MapOfBatyrs = () => {
         audio.play().catch(e => console.error("Ошибка воспроизведения аудио ассистента:", e));
     }, []);
 
-    const { isRecording, isProcessing, history, toggleRecording, clearHistory } = useSpeech({
+    const { isRecording, isProcessing, history, toggleRecording, clearHistory } = useMapSpeech({
         onNewAnswer: handleAssistantAnswer,
         onError: (message) => alert(`Ассистент қатесі: ${message}`),
         apiUrl: API_URL

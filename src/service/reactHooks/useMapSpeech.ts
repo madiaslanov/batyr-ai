@@ -17,7 +17,7 @@ interface UseSpeechProps {
 const SILENCE_DURATION_MS = 2000;
 const SILENCE_THRESHOLD = 5;
 
-export const useSpeech = ({ onNewAnswer, onError, apiUrl }: UseSpeechProps) => {
+export const useMapSpeech = ({ onNewAnswer, onError, apiUrl }: UseSpeechProps) => {
     const [isRecording, setIsRecording] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [history, setHistory] = useState<ChatMessage[]>([]);
