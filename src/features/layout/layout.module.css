@@ -19,8 +19,8 @@
     top: 0;
     left: 0;
     right: 0;
-    /* Учитываем и высоту, и сдвиг навбара */
-    bottom: calc(109px + env(safe-area-inset-bottom) - (109px - var(--gap, -20px)));
+    /* ✅ Отступ для контента теперь тоже вычисляется динамически */
+    bottom: calc(109px + max(0px, env(safe-area-inset-bottom) - 20px));
 }
 
 
@@ -31,19 +31,17 @@ nav {
     left: 0;
     right: 0;
 
-    /* ✅ ШАГ 1: УСЛОВНО ВЫЧИСЛЯЕМ ПОЛОЖЕНИЕ NAV-БАРА */
-    /* Эта переменная будет 1 для iPhone и 0 для Android */
-    --is-notch-device: min(1px, env(safe-area-inset-bottom));
-    /* Применяем ваше смещение (-20px) ТОЛЬКО для iPhone */
-    bottom: calc( -20px * var(--is-notch-device) );
+    /* ✅✅✅ НОВАЯ, ПРАВИЛЬНАЯ ФОРМУЛА ✅✅✅ */
+    /* Вычисляем финальное положение от низа экрана */
+    bottom: max(0px, env(safe-area-inset-bottom) - 20px);
 
-    /* Высота и другие стили остаются прежними */
+    /* Все остальные ваши стили остаются без изменений */
     height: 109px;
     background: #BFA75E;
     display: flex;
     z-index: 1000;
 
-    /* ❌ УДАЛЯЕМ ОТСЮДА padding-bottom и box-sizing, они здесь больше не нужны */
+    /* padding и box-sizing здесь не нужны */
 }
 
 
@@ -114,11 +112,21 @@ nav a {
 }
 
 /* Убираем лишние линии по краям */
-nav a:first-child .card::before { display: none; }
-nav a:last-child .card::after { display: none; }
+nav a:first-child .card::before {
+    display: none;
+}
 
-.card::before { left: 0; }
-.card::after { right: 0; }
+nav a:last-child .card::after {
+    display: none;
+}
+
+.card::before {
+    left: 0;
+}
+
+.card::after {
+    right: 0;
+}
 
 
 /* --- 7. Адаптивность (исправлена логика) --- */
@@ -134,6 +142,7 @@ nav a:last-child .card::after { display: none; }
         /* Отступ для контента тоже должен обновиться */
         bottom: calc(80px + env(safe-area-inset-bottom) - (80px - var(--gap, -15px)));
     }
+
     .card img {
         width: 60px;
         height: 65px;
@@ -155,6 +164,7 @@ body.keyboard-open nav {
         /* Скрываем навбар и растягиваем контент на весь экран */
         display: none;
     }
+
     .mainContent {
         display: block;
         bottom: 0;
