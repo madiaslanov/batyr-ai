@@ -19,8 +19,8 @@
     top: 0;
     left: 0;
     right: 0;
-    /* ✅ Отступ для контента теперь тоже вычисляется динамически */
-    bottom: calc(109px + max(0px, env(safe-area-inset-bottom) - 20px));
+    /* Отступ равен только высоте ВИДИМОЙ части навбара */
+    bottom: 109px;
 }
 
 
@@ -28,22 +28,25 @@
 /* Она остается фиксированной, как вы и хотели */
 nav {
     position: fixed;
+    bottom: -20px;
     left: 0;
     right: 0;
 
-    /* ✅✅✅ НОВАЯ, ПРАВИЛЬНАЯ ФОРМУЛА ✅✅✅ */
-    /* Вычисляем финальное положение от низа экрана */
-    bottom: max(0px, env(safe-area-inset-bottom) - 20px);
-
-    /* Все остальные ваши стили остаются без изменений */
+    /* Устанавливаем ТОЛЬКО высоту видимой части */
     height: 109px;
+
     background: #BFA75E;
     display: flex;
     z-index: 1000;
 
-    /* padding и box-sizing здесь не нужны */
-}
+    /* ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ:
+       Мы добавляем отступ, который "приподнимает" иконки,
+       но НЕ РАСТЯГИВАЕТ цветной фон навбара. */
+    padding-bottom: env(safe-area-inset-bottom);
 
+    /* box-sizing нужен, чтобы padding не увеличивал высоту */
+    box-sizing: content-box;
+}
 
 /* --- 4. Стили для ссылок и карточек (сохранены ваши стили) --- */
 nav a {
@@ -112,37 +115,25 @@ nav a {
 }
 
 /* Убираем лишние линии по краям */
-nav a:first-child .card::before {
-    display: none;
-}
+nav a:first-child .card::before { display: none; }
+nav a:last-child .card::after { display: none; }
 
-nav a:last-child .card::after {
-    display: none;
-}
-
-.card::before {
-    left: 0;
-}
-
-.card::after {
-    right: 0;
-}
+.card::before { left: 0; }
+.card::after { right: 0; }
 
 
 /* --- 7. Адаптивность (исправлена логика) --- */
 @media (max-height: 850px) {
     nav {
-        /* Меняем и высоту, и зазор для маленьких экранов */
+        /* Уменьшаем высоту видимой части */
         height: 80px;
-        --gap: -15px;
-        bottom: calc(env(safe-area-inset-bottom) - (80px - var(--gap)));
     }
 
+    /* Контент теперь тоже знает новую высоту навбара */
     .mainContent {
-        /* Отступ для контента тоже должен обновиться */
-        bottom: calc(80px + env(safe-area-inset-bottom) - (80px - var(--gap, -15px)));
+        /* Контент знает только о видимой высоте */
+        bottom: 80px;
     }
-
     .card img {
         width: 60px;
         height: 65px;
@@ -164,7 +155,6 @@ body.keyboard-open nav {
         /* Скрываем навбар и растягиваем контент на весь экран */
         display: none;
     }
-
     .mainContent {
         display: block;
         bottom: 0;
