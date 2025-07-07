@@ -209,7 +209,8 @@ const MapOfBatyrs = () => {
                 <p>Еліміздің тарихын біл! Аймақты басып, батырлар жайлы оқы.</p>
             </div>
 
-            <div id="map" className={style.mapContainer}></div>
+            <div id="map" className={`${style.mapContainer} swiper-no-swiping`}></div>
+
 
             <div className={style.infoPanel}>
                 {loading && <div className={style.loader}>Ақсақалдардан сұрап жатырмыз...</div>}
@@ -229,7 +230,8 @@ const MapOfBatyrs = () => {
                             ) : !isSpeaking ? (
                                 <button onClick={handlePlayAudio} className={style.button}>🔊 Оқу</button>
                             ) : (
-                                <button onClick={handleStopAudio} className={`${style.button} ${style.stopButton}`}>🔇 Тоқтату</button>
+                                <button onClick={handleStopAudio} className={`${style.button} ${style.stopButton}`}>🔇
+                                    Тоқтату</button>
                             )}
                         </div>
                         <h3>Осы өңірдің батырлары</h3>
@@ -291,7 +293,9 @@ const MapOfBatyrs = () => {
                             >
                                 {isProcessing ? '⏳' : isRecording ? '■' : '●'}
                             </button>
-                            <button onClick={clearHistory} className={style.clearButton} disabled={history.length === 0 || isProcessing}>Тазалау</button>
+                            <button onClick={clearHistory} className={style.clearButton}
+                                    disabled={history.length === 0 || isProcessing}>Тазалау
+                            </button>
                         </div>
                     </div>
                 </div>
