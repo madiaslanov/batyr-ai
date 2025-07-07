@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ReactGA from "react-ga4";
@@ -6,7 +8,7 @@ import Layout from "../features/layout/layout.tsx";
 
 const TRACKING_ID = "G-2J5SZSQH87";
 
-// ✅ ОБНОВЛЕНО: Описываем интерфейс WebApp для TypeScript
+// Описываем интерфейс WebApp для TypeScript
 declare global {
     interface Window {
         Telegram: {
@@ -15,12 +17,17 @@ declare global {
                 expand: () => void;
                 enableClosingConfirmation: () => void;
                 setBackgroundColor: (color: string) => void;
-                setHeaderColor: (color: string) => void;
+                setHeaderColor: (color: 'bg_color' | 'secondary_bg_color' | string) => void; // Уточняем тип
+                isHeaderVisible: boolean;
                 initDataUnsafe?: {
                     start_param?: string;
                 };
             };
         };
+    }
+    // Добавляем интерфейс для Screen Orientation API
+    interface ScreenOrientation {
+        lock(orientation: 'portrait-primary'): Promise<void>;
     }
 }
 
@@ -47,23 +54,34 @@ function App() {
 
     // 4. Работа с Telegram WebApp
     useEffect(() => {
-        // Проверяем, что объект Telegram.WebApp существует
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
 
-            // Сообщаем Telegram, что приложение готово к отображению
             tg.ready();
-
-            // ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ: Растягиваем окно на весь экран
             tg.expand();
-            console.log("🚀 Telegram Web App expanded to full screen.");
-
-            // ✅ РЕКОМЕНДАЦИЯ: Включаем подтверждение закрытия для лучшего UX
             tg.enableClosingConfirmation();
 
-            // Устанавливаем цвета, чтобы приложение выглядело как часть Telegram
-            tg.setBackgroundColor('#f4f1e9'); // Цвет фона, как у вашей карты
-            tg.setHeaderColor('#3a2d21');    // Темно-коричневый для шапки
+            // Устанавливаем цвет фона приложения
+            tg.setBackgroundColor('#f4f1e9');
+
+            // ✅ ИЗМЕНЕНИЕ 1: Делаем шапку "невидимой"
+            // Мы устанавливаем цвет шапки в 'secondary_bg_color'.
+            // Это специальное значение, которое заставляет шапку принять цвет фона,
+            // эффективно скрывая ее и создавая эффект полного экрана.
+            tg.setHeaderColor('secondary_bg_color');
+            console.log("🎨 Header color set to secondary_bg_color for fullscreen effect.");
+
+            // ✅ ИЗМЕНЕНИЕ 2: Блокируем поворот экрана
+            // Используем стандартный Web API для блокировки ориентации в портретном режиме.
+            try {
+                if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                    screen.orientation.lock('portrait-primary')
+                        .then(() => console.log("🔒 Screen orientation locked to portrait."))
+                        .catch(err => console.error("Could not lock orientation: ", err));
+                }
+            } catch (error) {
+                console.error("Screen orientation lock API not supported or failed:", error);
+            }
 
             // Обработка deeplink-параметров (start_param)
             const startParam = tg.initDataUnsafe?.start_param;
@@ -76,14 +94,12 @@ function App() {
                 }
             }
         }
-    }, [navigate]); // navigate в зависимостях, так как используется внутри
+    }, [navigate]);
 
-    // Пока идет проверка на мобильное устройство, ничего не рендерим
     if (isMobile === null) {
         return null;
     }
 
-    // Если не мобильное устройство, показываем заглушку
     if (!isMobile) {
         return (
             <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '1rem' }}>
