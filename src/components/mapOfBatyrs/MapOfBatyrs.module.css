@@ -182,3 +182,74 @@
 .stopButton:hover {
     background-color: #a03226;
 }
+
+
+.assistantFab {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    font-size: 28px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: all 0.2s ease-in-out;
+}
+.assistantFab:hover {
+    transform: scale(1.1);
+    background-color: #0056b3;
+}
+.assistantOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+    backdrop-filter: blur(4px);
+}
+.assistantModal {
+    background: #1e1e1e;
+    color: #f0f0f0;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    height: 75%;
+    max-height: 650px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid #333;
+}
+.assistantHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #333;
+}
+.assistantHeader h3 { margin: 0; font-size: 1.2rem; }
+.closeButton { background: none; border: none; color: #aaa; font-size: 24px; cursor: pointer; }
+.chatContainer { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.chatPlaceholder { margin: auto; color: #888; text-align: center; }
+.userMsg, .assistantMsg { padding: 10px 15px; border-radius: 18px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
+.userMsg { background-color: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.assistantMsg { background-color: #3a3a3a; color: #f0f0f0; align-self: flex-start; border-bottom-left-radius: 4px; }
+.assistantFooter { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 20px; }
+.micButton { width: 55px; height: 55px; border-radius: 50%; border: 2px solid #007bff; background-color: #1e1e1e; color: #007bff; font-size: 24px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.micButton:disabled { opacity: 0.5; cursor: not-allowed; }
+.micRecording { background-color: #dc3545; border-color: #dc3545; color: white; }
+.clearButton { background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.clearButton:disabled { background: #444; cursor: not-allowed; color: #888; }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import style from './MapOfBatyrs.module.css';
+// Мы импортируем хук из другого файла, но его код также предоставлен ниже
 
 // Объявляем нашу будущую глобальную функцию, чтобы TypeScript ее "видел"
 declare global {
@@ -13,21 +14,32 @@ interface Batyr { name: string; years: string; description: string; image: strin
 interface HistoricalEvent { name: string; period: string; description: string; }
 interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; historical_events: HistoricalEvent[]; }
 
+
 const MapOfBatyrs = () => {
     const API_URL = 'https://api.batyrai.com';
 
+    // --- Состояние и логика для Карты ---
     const [regionData, setRegionData] = useState<RegionData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
     const textToReadRef = useRef<string>('');
     const mapInitialized = useRef(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [isAudioLoading, setIsAudioLoading] = useState(false);
 
-    // ✅ НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ УПРАВЛЕНИЯ АУДИО
-    const audioRef = useRef<HTMLAudioElement | null>(null); // Ссылка на наш <audio> элемент
-    const [isAudioLoading, setIsAudioLoading] = useState(false); // Состояние загрузки аудио
+    // Функция остановки озвучки для карты
+    const handleStopAudio = useCallback(() => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            URL.revokeObjectURL(audioRef.current.src);
+            audioRef.current = null;
+        }
+        setIsSpeaking(false);
+    }, []);
 
-    // Функция для получения данных о регионе (без изменений)
+    // Функция получения данных при клике на регион
     const handleRegionClick = useCallback(async (regionId: string) => {
         console.log(`✅ Клик из mapdata.js! ▶️ Запрос для региона: ${regionId}`);
         handleStopAudio(); // Останавливаем озвучку от предыдущего региона
@@ -51,9 +63,9 @@ const MapOfBatyrs = () => {
         } finally {
             setLoading(false);
         }
-    }, []); // API_URL константа, ее можно не включать в зависимости
+    }, [API_URL, handleStopAudio]);
 
-    // useEffect для инициализации карты (без изменений)
+    // Эффект для инициализации карты
     useEffect(() => {
         window.handleMapClick = handleRegionClick;
 
@@ -92,14 +104,14 @@ const MapOfBatyrs = () => {
         };
     }, [handleRegionClick]);
 
-    // ✅ ОБНОВЛЕННАЯ ЛОГИКА ОЗВУЧКИ ЧЕРЕЗ БЭКЕНД
+    // Функция для озвучки текста с карты
     const handlePlayAudio = async () => {
         if (!textToReadRef.current || isAudioLoading) return;
 
-        handleStopAudio(); // Останавливаем предыдущее аудио, если оно есть
+        handleStopAudio();
         setIsAudioLoading(true);
         setIsSpeaking(false);
-        setError(null); // Сбрасываем старые ошибки
+        setError(null);
 
         try {
             const response = await fetch(`${API_URL}/api/tts`, {
@@ -109,51 +121,61 @@ const MapOfBatyrs = () => {
             });
 
             if (!response.ok) {
-                const errorDetails = await response.json();
-                console.error("Сервер вернул ошибку при синтезе речи:", errorDetails);
                 throw new Error('Сервер не смог сгенерировать аудио.');
             }
 
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
-
-            // Создаем и проигрываем аудио
             const audio = new Audio(audioUrl);
             audioRef.current = audio;
 
-            audio.onplay = () => {
-                console.log("▶️ Воспроизведение аудио началось");
-                setIsSpeaking(true);
-            }
-            audio.onended = () => {
-                console.log("⏹️ Воспроизведение аудио завершено");
-                setIsSpeaking(false);
-            };
-            audio.onerror = (e) => {
-                console.error("Ошибка воспроизведения аудио:", e);
+            audio.onplay = () => setIsSpeaking(true);
+            audio.onended = () => setIsSpeaking(false);
+            audio.onerror = () => {
                 setIsSpeaking(false);
                 setError("Аудиофайлды ойнату мүмкін болмады.");
             };
-
             audio.play();
 
         } catch (err) {
-            console.error("Ошибка при получении аудио:", err);
             setError("Өкінішке орай, аудионы жүктеу мүмкін болмады.");
         } finally {
             setIsAudioLoading(false);
         }
     };
 
-    const handleStopAudio = () => {
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-            // Освобождаем ссылку, чтобы сборщик мусора мог удалить объект
-            URL.revokeObjectURL(audioRef.current.src);
-            audioRef.current = null;
+
+    // --- Состояние и логика для Голосового Ассистента ---
+    const [isAssistantVisible, setIsAssistantVisible] = useState(false);
+    const assistantAudioRef = useRef<HTMLAudioElement | null>(null);
+
+    const handleAssistantAnswer = useCallback((audioUrl: string) => {
+        if (assistantAudioRef.current) {
+            assistantAudioRef.current.pause();
         }
-        setIsSpeaking(false);
+        const audio = new Audio(audioUrl);
+        assistantAudioRef.current = audio;
+        audio.play().catch(e => console.error("Ошибка воспроизведения аудио ассистента:", e));
+    }, []);
+
+    const { isRecording, isProcessing, history, toggleRecording, clearHistory } = useSpeech({
+        onNewAnswer: handleAssistantAnswer,
+        onError: (message) => alert(`Ассистент қатесі: ${message}`),
+        apiUrl: API_URL
+    });
+
+    const toggleAssistant = () => {
+        const nextState = !isAssistantVisible;
+        setIsAssistantVisible(nextState);
+        // Если закрываем окно, останавливаем все процессы ассистента
+        if (!nextState) {
+            if (isRecording) {
+                toggleRecording(); // это вызовет stopRecording в хуке
+            }
+            if (assistantAudioRef.current) {
+                assistantAudioRef.current.pause();
+            }
+        }
     };
 
     return (
@@ -162,7 +184,9 @@ const MapOfBatyrs = () => {
                 <h1>🌍 Батырлар Картасы</h1>
                 <p>Еліміздің тарихын біл! Аймақты басып, батырлар жайлы оқы.</p>
             </div>
+
             <div id="map" className={style.mapContainer}></div>
+
             <div className={style.infoPanel}>
                 {loading && <div className={style.loader}>Ақсақалдардан сұрап жатырмыз...</div>}
                 {error && <div className={style.error}>{error}</div>}
@@ -176,7 +200,6 @@ const MapOfBatyrs = () => {
                         <h2>{regionData.region_name}</h2>
                         <p className={style.mainText}>{regionData.main_text}</p>
                         <div className={style.buttons}>
-                            {/* ✅ ОБНОВЛЕННЫЙ БЛОК КНОПОК С СОСТОЯНИЕМ ЗАГРУЗКИ */}
                             {isAudioLoading ? (
                                 <button className={style.button} disabled>⏳ Жүктелуде...</button>
                             ) : !isSpeaking ? (
@@ -213,6 +236,44 @@ const MapOfBatyrs = () => {
                     </div>
                 )}
             </div>
+
+            {/* Кнопка вызова ассистента */}
+            <button onClick={toggleAssistant} className={style.assistantFab} aria-label="Ассистентті шақыру">
+                🎙️
+            </button>
+
+            {/* Модальное окно ассистента */}
+            {isAssistantVisible && (
+                <div className={style.assistantOverlay} onClick={toggleAssistant}>
+                    <div className={style.assistantModal} onClick={(e) => e.stopPropagation()}>
+                        <div className={style.assistantHeader}>
+                            <h3>AI-Көмекші Батыр</h3>
+                            <button onClick={toggleAssistant} className={style.closeButton}>×</button>
+                        </div>
+                        <div className={style.chatContainer}>
+                            {history.length === 0 && !isProcessing && (
+                                <div className={style.chatPlaceholder}>Тарих туралы сұрағыңызды қойыңыз...</div>
+                            )}
+                            {history.map((msg, index) => (
+                                <div key={index} className={msg.role === 'user' ? style.userMsg : style.assistantMsg}>
+                                    {msg.content}
+                                </div>
+                            ))}
+                            {isProcessing && <div className={style.assistantMsg}>Ойланып жатырмын...</div>}
+                        </div>
+                        <div className={style.assistantFooter}>
+                            <button
+                                onClick={toggleRecording}
+                                className={`${style.micButton} ${isRecording ? style.micRecording : ''}`}
+                                disabled={isProcessing}
+                            >
+                                {isProcessing ? '⏳' : isRecording ? '■' : '●'}
+                            </button>
+                            <button onClick={clearHistory} className={style.clearButton} disabled={history.length === 0 || isProcessing}>Тазалау</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
