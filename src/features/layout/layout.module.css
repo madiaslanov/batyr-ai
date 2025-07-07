@@ -1,75 +1,87 @@
-.card img{
-    width: 75px;
-    height: 80px;
+/* ===============================================================
+   ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ src/features/layout/layout.module.css
+   =============================================================== */
+
+/* --- 1. Главный контейнер --- */
+/* Он будет якорем для позиционирования контента и навбара */
+.appContainer {
+    position: relative; /* Обязательно для дочерних position: absolute */
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* Предотвращаем случайный скролл */
+    background-color: #f4f1e9;
 }
 
-.card p{
-    line-height: 22px;
-    font-size: 20px;
+/* --- 2. Контейнер для Swiper'а --- */
+/* Мы четко указываем ему занять все место, КРОМЕ навбара */
+.mainContent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* Главный фикс: заканчивается там, где начинается навбар */
+    bottom: 109px;
 }
 
-.card{
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 109px;
-    background-color: #BFA75E;
-    position: relative;
-    width: 100%;
-}
+/* --- 3. Навигационная панель --- */
+/* Она остается фиксированной, как вы и хотели */
 nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: #ffffff; /* У вас здесь ваш #BFA75E */
-    display: flex;
-    align-items: center; /* Это выравнивает иконки по центру по вертикали */
-    font-size: 20px;
-    z-index: 100;
-
-    /* --- ✅ НОВАЯ, ПРАВИЛЬНАЯ ЛОГИКА --- */
-
-    /* 1. Задаем базовую высоту для контента (кнопок) */
     height: 109px;
-
-    /*
-      2. Добавляем внутренний отступ снизу. Он "приподнимет"
-         содержимое nav-бара, но сам nav-бар останется прижатым к низу.
-    */
-    padding-bottom: env(safe-area-inset-bottom);
-
-    /*
-      3. Убедимся, что box-sizing стандартный. Это не обязательно,
-         но для ясности лучше указать.
-    */
-    box-sizing: border-box;
+    background: #BFA75E;
+    display: flex;
+    z-index: 1000; /* Высокий z-index, чтобы быть поверх всего */
+    padding-bottom: env(safe-area-inset-bottom); /* Для iPhone */
+    box-sizing: content-box; /* Важно, чтобы padding не увеличивал высоту */
 }
 
+/* --- 4. Стили для ссылок и карточек (сохранены ваши стили) --- */
+nav a {
+    text-decoration: none;
+    flex: 1;
+}
 
-.card p{
+.card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Занимает всю высоту родителя (nav) */
+    background-color: #BFA75E;
+    position: relative;
+    transition: background-color 0.2s; /* Плавный переход цвета */
+}
+
+.card img {
+    width: 75px;
+    height: 80px;
+    transition: top 0.2s ease-in-out; /* Плавный "выезд" */
+    position: relative; /* Чтобы можно было сдвигать */
+    top: 0;
+}
+
+.card p {
     display: none;
     text-decoration: none;
     margin: 0;
+    font-size: 20px;
 }
 
-.app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+/* --- 5. Стили для активного состояния (сохранены ваши стили) --- */
+.card.active {
+    background-color: #A88F4B;
 }
 
-.main-content {
-    flex: 1;
-    overflow-y: auto;
-
-    /* ✅ Отступ равен ТОЛЬКО высоте видимой части бара */
-    padding-bottom: 109px;
+.card.active img {
+    position: absolute; /* Позиционируем относительно карточки */
+    top: -15px; /* "Выезжает" наверх */
 }
 
-.active p{
+.active p {
     display: block;
     color: #FFFFFF;
     font-weight: 500;
@@ -78,46 +90,8 @@ nav {
     bottom: 15px;
     text-shadow: 1px 1px 1px rgb(0, 0, 0);
 }
-nav a{
-    text-decoration: none;
-    flex: 1;
-}
 
-.card.active{
-    background-color: #A88F4B;
-}
-
-.card.active img{
-    position: absolute;
-    top: -15px;
-}
-
-@media (max-height: 850px) {
-    nav {
-        height: 80px;
-        padding-bottom: env(safe-area-inset-bottom);
-        box-sizing: border-box;
-    }
-
-    .card {
-        height: 80px;
-    }
-
-    .card img {
-        width: 60px;
-        height: 65px;
-    }
-
-    .active p {
-        bottom: 10px;
-        font-size: 16px;
-    }
-
-    .main-content {
-        padding-bottom: 80px;
-    }
-}
-
+/* --- 6. Разделители (сохранены ваши стили) --- */
 .card::before,
 .card::after {
     content: "";
@@ -130,19 +104,48 @@ nav a{
     z-index: 1000;
 }
 
-.card::before {
-    left: 0;
+/* Убираем лишние линии по краям */
+nav a:first-child .card::before { display: none; }
+nav a:last-child .card::after { display: none; }
+
+.card::before { left: 0; }
+.card::after { right: 0; }
+
+
+/* --- 7. Адаптивность (исправлена логика) --- */
+@media (max-height: 850px) {
+    nav {
+        height: 80px;
+    }
+
+    /* Контент теперь тоже знает новую высоту навбара */
+    .mainContent {
+        bottom: 80px;
+    }
+
+    .card img {
+        width: 60px;
+        height: 65px;
+    }
+
+    .active p {
+        bottom: 10px;
+        font-size: 16px;
+    }
 }
 
-.card::after {
-    right: 0;
-}
+/* Скрытие навбара при маленькой высоте или клавиатуре */
 body.keyboard-open nav {
     display: none;
 }
 
 @media (max-height: 500px) {
-    nav{
+    nav, .mainContent {
+        /* Скрываем навбар и растягиваем контент на весь экран */
         display: none;
+    }
+    .mainContent {
+        display: block;
+        bottom: 0;
     }
 }

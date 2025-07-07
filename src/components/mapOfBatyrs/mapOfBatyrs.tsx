@@ -1,11 +1,17 @@
+// src/components/mapOfBatyrs/mapOfBatyrs.tsx
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import style from './MapOfBatyrs.module.css';
-import {useMapSpeech} from "../../service/reactHooks/useMapSpeech.ts";
+import { useMapSpeech } from "../../service/reactHooks/useMapSpeech.ts";
 
-// Объявляем нашу будущую глобальную функцию, чтобы TypeScript ее "видел"
+// Объявляем глобальные переменные, чтобы TypeScript их "видел"
 declare global {
     interface Window {
         handleMapClick?: (regionId: string) => void;
+        simplemaps_countrymap?: {
+            load: () => void; // Функция для перезагрузки карты
+        };
+        simplemaps_countrymap_mapdata?: any; // Данные карты
     }
 }
 
@@ -24,7 +30,6 @@ const MapOfBatyrs = () => {
     const [error, setError] = useState<string | null>(null);
     const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
     const textToReadRef = useRef<string>('');
-    const mapInitialized = useRef(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [isAudioLoading, setIsAudioLoading] = useState(false);
 
@@ -33,7 +38,7 @@ const MapOfBatyrs = () => {
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
-            URL.revokeObjectURL(audioRef.current.src);
+            // Не используем revokeObjectURL здесь, чтобы избежать ошибок при повторном воспроизведении
             audioRef.current = null;
         }
         setIsSpeaking(false);
@@ -65,23 +70,42 @@ const MapOfBatyrs = () => {
         }
     }, [API_URL, handleStopAudio]);
 
-    // Эффект для инициализации карты
+    // ✅✅✅ ОБНОВЛЕННЫЙ ЭФФЕКТ ДЛЯ ИНИЦИАЛИЗАЦИИ КАРТЫ ✅✅✅
     useEffect(() => {
         window.handleMapClick = handleRegionClick;
 
-        if (mapInitialized.current) return;
-        mapInitialized.current = true;
+        const loadScript = (src: string): Promise<void> => {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+                document.head.appendChild(script);
+            });
+        };
 
-        const loadScript = (id: string, src: string, onLoad?: () => void) => {
-            if (document.getElementById(id)) {
-                if (onLoad) onLoad();
-                return;
+        const initializeMap = async () => {
+            try {
+                // Последовательно загружаем скрипты
+                await loadScript('/mapdata.js');
+                await loadScript('/countrymap.js');
+
+                // ✅ САМОЕ ГЛАВНОЕ: Принудительно перерисовываем карту
+                if (window.simplemaps_countrymap?.load) {
+                    window.simplemaps_countrymap.load();
+                    console.log("🗺️ Карта успешно переинициализирована!");
+                } else {
+                    console.warn("Функция simplemaps_countrymap.load() не найдена. Карта может не отобразиться.");
+                }
+            } catch (err) {
+                console.error("Ошибка при инициализации карты:", err);
+                setError("Картаны жүктеу мүмкін болмады.");
             }
-            const script = document.createElement('script');
-            script.id = id;
-            script.src = src;
-            if (onLoad) script.onload = onLoad;
-            document.head.appendChild(script);
         };
 
         if (!document.getElementById('simplemaps-css-script')) {
@@ -92,17 +116,13 @@ const MapOfBatyrs = () => {
             document.head.appendChild(cssLink);
         }
 
-        loadScript('simplemaps-mapdata-script', '/mapdata.js', () => {
-            console.log("✔️ Скрипт с данными (mapdata.js) загружен.");
-            loadScript('simplemaps-countrymap-script', '/countrymap.js', () => {
-                console.log("✔️ Скрипт карты (countrymap.js) загружен. Карта готова к работе.");
-            });
-        });
+        initializeMap();
 
         return () => {
             window.handleMapClick = undefined;
+            handleStopAudio(); // Останавливаем аудио при уходе со страницы
         };
-    }, [handleRegionClick]);
+    }, [handleRegionClick, handleStopAudio]);
 
     // Функция для озвучки текста с карты
     const handlePlayAudio = async () => {
@@ -130,10 +150,14 @@ const MapOfBatyrs = () => {
             audioRef.current = audio;
 
             audio.onplay = () => setIsSpeaking(true);
-            audio.onended = () => setIsSpeaking(false);
+            audio.onended = () => {
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+            };
             audio.onerror = () => {
                 setIsSpeaking(false);
                 setError("Аудиофайлды ойнату мүмкін болмады.");
+                URL.revokeObjectURL(audioUrl);
             };
             audio.play();
 
@@ -145,7 +169,7 @@ const MapOfBatyrs = () => {
     };
 
 
-    // --- Состояние и логика для Голосового Ассистента ---
+    // --- Логика для Голосового Ассистента (без изменений) ---
     const [isAssistantVisible, setIsAssistantVisible] = useState(false);
     const assistantAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -167,10 +191,9 @@ const MapOfBatyrs = () => {
     const toggleAssistant = () => {
         const nextState = !isAssistantVisible;
         setIsAssistantVisible(nextState);
-        // Если закрываем окно, останавливаем все процессы ассистента
         if (!nextState) {
             if (isRecording) {
-                toggleRecording(); // это вызовет stopRecording в хуке
+                toggleRecording();
             }
             if (assistantAudioRef.current) {
                 assistantAudioRef.current.pause();
@@ -178,6 +201,7 @@ const MapOfBatyrs = () => {
         }
     };
 
+    // --- JSX (без изменений) ---
     return (
         <div className={style.pageContainer}>
             <div className={style.header}>
@@ -237,12 +261,10 @@ const MapOfBatyrs = () => {
                 )}
             </div>
 
-            {/* Кнопка вызова ассистента */}
             <button onClick={toggleAssistant} className={style.assistantFab} aria-label="Ассистентті шақыру">
                 🎙️
             </button>
 
-            {/* Модальное окно ассистента */}
             {isAssistantVisible && (
                 <div className={style.assistantOverlay} onClick={toggleAssistant}>
                     <div className={style.assistantModal} onClick={(e) => e.stopPropagation()}>
