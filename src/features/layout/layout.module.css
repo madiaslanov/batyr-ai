@@ -19,8 +19,8 @@
     top: 0;
     left: 0;
     right: 0;
-    /* Отступ равен только высоте ВИДИМОЙ части навбара */
-    bottom: 109px;
+    /* Учитываем и высоту, и сдвиг навбара */
+    bottom: calc(109px + env(safe-area-inset-bottom) - (109px - var(--gap, -20px)));
 }
 
 
@@ -28,25 +28,25 @@
 /* Она остается фиксированной, как вы и хотели */
 nav {
     position: fixed;
-    /* bottom: -20px; <-- УДАЛЯЕМ ЭТУ СТРОКУ */
     left: 0;
     right: 0;
+
+    /* Высота видимой части, как и раньше */
     height: 109px;
     background: #BFA75E;
     display: flex;
     z-index: 1000;
 
-    /* ✅✅✅ ГЛАВНОЕ ИЗМЕНЕНИЕ: УМНОЕ ВЫЧИСЛЕНИЕ 'bottom' ✅✅✅ */
+    /* padding и box-sizing для этой цели не нужны, мы их убираем */
 
-    /* 1. Вычисляем множитель-флаг: он будет равен 0 для Android и 1 для iPhone */
-    --is-iphone-with-notch: min(1, env(safe-area-inset-bottom));
+    /* ✅✅✅ НОВАЯ, ПРАВИЛЬНАЯ ЛОГИКА ✅✅✅ */
 
-    /* 2. Применяем ваше смещение (-20px), умножая его на флаг */
-    bottom: calc(0px - 20px * var(--is-iphone-with-notch));
+    /* 1. Определяем желаемый зазор от системной полосы */
+    /* Это расстояние от ВЕРХА системной полосы до НИЗА вашего навбара. */
+    --gap: -20px; /* <--- Ваше значение. Отрицательное, чтобы "заехать" на полосу */
 
-    /* Эти строки остаются без изменений */
-    padding-bottom: env(safe-area-inset-bottom);
-    box-sizing: content-box;
+    /* 2. Вычисляем финальное положение навбара */
+    bottom: calc(env(safe-area-inset-bottom) - (109px - var(--gap)));
 }
 
 /* --- 4. Стили для ссылок и карточек (сохранены ваши стили) --- */
@@ -126,14 +126,15 @@ nav a:last-child .card::after { display: none; }
 /* --- 7. Адаптивность (исправлена логика) --- */
 @media (max-height: 850px) {
     nav {
-        /* Уменьшаем высоту видимой части */
+        /* Меняем и высоту, и зазор для маленьких экранов */
         height: 80px;
+        --gap: -15px;
+        bottom: calc(env(safe-area-inset-bottom) - (80px - var(--gap)));
     }
 
-    /* Контент теперь тоже знает новую высоту навбара */
     .mainContent {
-        /* Контент знает только о видимой высоте */
-        bottom: 80px;
+        /* Отступ для контента тоже должен обновиться */
+        bottom: calc(80px + env(safe-area-inset-bottom) - (80px - var(--gap, -15px)));
     }
     .card img {
         width: 60px;
