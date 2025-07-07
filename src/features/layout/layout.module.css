@@ -124,7 +124,7 @@ nav a:last-child .card::after { display: none; }
 
     /* Контент теперь тоже знает новую высоту навбара */
     .mainContent {
-        bottom: 80px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
     }
 
     .card img {
