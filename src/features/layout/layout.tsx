@@ -1,4 +1,4 @@
-// src/features/layout/layout.tsx (ОКОНЧАТЕЛЬНОЕ РЕШЕНИЕ)
+// src/features/layout/layout.tsx (ОКОНЧАТЕЛЬНОЕ, ПРОВЕРЕННОЕ РЕШЕНИЕ)
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from 'react';
@@ -19,8 +19,32 @@ export default function Layout() {
     const navigate = useNavigate();
     const activeIndex = pages.indexOf(location.pathname);
 
-    // Этот хук теперь нужен ТОЛЬКО для синхронизации "свайп -> URL"
+    const swiperRef = useRef<SwiperCore | null>(null);
+    const isNavigatingByClick = useRef(false);
+
+    // Этот useEffect отвечает ТОЛЬКО за запуск программного свайпа
+    useEffect(() => {
+        if (swiperRef.current && swiperRef.current.activeIndex !== activeIndex && activeIndex > -1) {
+            isNavigatingByClick.current = true;
+            swiperRef.current.slideTo(activeIndex, 300);
+        }
+    }, [activeIndex]);
+
+    // Эта функция - ЕДИНЫЙ ЦЕНТР УПРАВЛЕНИЯ для ВСЕХ изменений слайдера
     const handleSlideChange = (swiper: SwiperCore) => {
+        // ✅ ШАГ 1: Обновляем правила свайпа ПОСЛЕ каждого изменения
+        // Это гарантирует, что правила всегда соответствуют текущему слайду.
+        swiper.params.allowSlidePrev = swiper.activeIndex > 0;
+        swiper.params.allowSlideNext = swiper.activeIndex < pages.length - 1;
+        swiper.update(); // Применяем новые правила немедленно
+
+        // ШАГ 2: Разбираемся, был ли это клик или свайп пользователя
+        if (isNavigatingByClick.current) {
+            isNavigatingByClick.current = false; // Сбрасываем флаг и выходим
+            return;
+        }
+
+        // ШАГ 3: Если это был свайп пользователя, меняем URL
         const newPath = pages[swiper.activeIndex];
         if (location.pathname !== newPath) {
             navigate(newPath);
@@ -35,23 +59,14 @@ export default function Layout() {
         <div className={style.appContainer}>
             <div className={style.mainContent}>
                 <Swiper
-                    // ✅✅✅ ГЛАВНОЕ ИЗМЕНЕНИЕ ✅✅✅
-                    // Этот ключ заставляет React ПОЛНОСТЬЮ уничтожить и заново создать Swiper,
-                    // когда меняется activeIndex (т.е. после клика на навбаре).
-                    // Swiper каждый раз стартует "с чистого листа" на правильном слайде.
-                    key={activeIndex}
-
-                    // Мы больше не используем сложный useEffect.
-                    // initialSlide теперь надежно работает на новом экземпляре.
+                    onSwiper={(swiper) => { swiperRef.current = swiper; }}
                     initialSlide={activeIndex}
-                    onSlideChangeTransitionEnd={handleSlideChange}
-
+                    onSlideChange={handleSlideChange}
                     style={{ height: '100%', width: '100%' }}
-
-                    // Эти пропсы тоже будут правильно установлены при создании нового Swiper
-                    allowSlidePrev={activeIndex > 0}
-                    allowSlideNext={activeIndex < pages.length - 1}
                     resistanceRatio={0}
+                    // ✅✅✅ ГЛАВНОЕ ИЗМЕНЕНИЕ ✅✅✅
+                    // Мы УДАЛИЛИ пропсы allowSlidePrev и allowSlideNext из JSX.
+                    // Теперь мы управляем ими напрямую, что исключает конфликты.
                 >
                     <SwiperSlide><PhotoContainer /></SwiperSlide>
                     <SwiperSlide><BatyrContainer /></SwiperSlide>
