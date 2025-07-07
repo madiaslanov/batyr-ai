@@ -1,28 +1,45 @@
-// BatyrContainer.tsx
+// BatyrContainer.tsx (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 
+import { useRef, useCallback } from 'react'; // <-- 1. Импортируем useRef и useCallback
 import { Batyr } from "./ui/batyr";
-import { useSpeech } from "../../service/reactHooks/useSpeech"; // Убедитесь, что путь верный
+import { useSpeech } from "../../service/reactHooks/useSpeech.ts";
 
 export const BatyrContainer = () => {
-    // Данные о пользователе из Telegram Web App
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-    // Коллбэк для воспроизведения аудио ответа
-    const handleNewAnswer = (audioUrl: string) => {
-        const audio = new Audio(audioUrl);
-        audio.play().catch(e => console.error("Ошибка воспроизведения аудио:", e));
-    };
+    // ✅ 2. Создаем реф для хранения аудио плеера
+    const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-    const handleError = (message: string) => {
-        // Здесь можно показать красивое уведомление вместо alert
+    // ✅ 3. Создаем новую, надежную функцию для воспроизведения
+    const handleNewAnswer = useCallback((audioUrl: string) => {
+        // Если предыдущее аудио еще играет, останавливаем его
+        if (audioPlayerRef.current) {
+            audioPlayerRef.current.pause();
+        }
+
+        // Создаем новый плеер
+        const newAudio = new Audio(audioUrl);
+
+        // Сохраняем его в реф, чтобы он не был удален сборщиком мусора
+        audioPlayerRef.current = newAudio;
+
+        // Запускаем воспроизведение
+        audioPlayerRef.current.play().catch(e => console.error("Ошибка воспроизведения аудио:", e));
+
+        // (Опционально, но рекомендуется) Очищаем URL, когда воспроизведение закончится
+        newAudio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+        };
+    }, []); // useCallback с пустым массивом зависимостей гарантирует, что функция не будет пересоздаваться
+
+    const handleError = useCallback((message: string) => {
         alert(message);
-    };
+    }, []);
 
-    // ✅ Получаем из хука не только флаги, но и саму историю
     const {
         isRecording,
         isProcessing,
-        history, // <--- 1. Получаем историю
+        history,
         toggleRecording,
     } = useSpeech({
         onNewAnswer: handleNewAnswer,
@@ -34,7 +51,7 @@ export const BatyrContainer = () => {
             tgUser={tgUser}
             isRecording={isRecording}
             isProcessing={isProcessing}
-            isHistoryEmpty={history.length === 0} // <--- 2. Передаем флаг пустоты истории
+            isHistoryEmpty={history.length === 0}
             onToggleRecording={toggleRecording}
         />
     );
