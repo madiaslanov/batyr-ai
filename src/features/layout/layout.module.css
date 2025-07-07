@@ -20,7 +20,7 @@
     left: 0;
     right: 0;
     /* ✅ ИЗМЕНЕНИЕ 1: Отступ снизу теперь равен высоте навбара ПЛЮС безопасная зона */
-    bottom: calc(109px + env(safe-area-inset-bottom));
+    bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 /* --- 3. Навигационная панель --- */
