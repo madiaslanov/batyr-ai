@@ -14,17 +14,17 @@
 
 /* --- 2. Контейнер для Swiper'а --- */
 /* Мы четко указываем ему занять все место, КРОМЕ навбара */
+/* --- 2. Контейнер для Swiper'а --- */
 .mainContent {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
 
-    /* Вычисляем флаг так же, как и для nav */
-    --is-notch-device: min(1px, env(safe-area-inset-bottom));
-
-    /* Отступ = высота навбара + (20px только для iPhone) */
-    bottom: calc(109px + (20px * var(--is-notch-device)));
+    /* ✅ ПРОСТОЕ И НАДЕЖНОЕ РЕШЕНИЕ:
+       Отступ всегда равен высоте видимой части навбара.
+       Мы просто игнорируем "безопасную зону", потому что nav находится поверх контента. */
+    bottom: 109px;
 }
 
 
@@ -38,19 +38,16 @@ nav {
     background: #BFA75E;
     display: flex;
     z-index: 1000;
-    box-sizing: content-box;
 
-    /* ✅✅✅ ВОТ РЕШЕНИЕ: УСЛОВНОЕ ПРАВИЛО ДЛЯ 'bottom' ✅✅✅ */
+    /* ✅✅✅ ЕДИНСТВЕННАЯ СТРОКА, КОТОРАЯ РЕШАЕТ ВСЁ ✅✅✅ */
+    bottom: calc(0px - min(20px, env(safe-area-inset-bottom)));
 
-    /* 1. Создаем флаг, который равен 1 на iPhone и 0 на Android */
-    --is-notch-device: min(1px, env(safe-area-inset-bottom));
-
-    /* 2. Применяем ваше смещение (-20px), умножая его на этот флаг */
-    bottom: calc( -20px * var(--is-notch-device) );
-
-    /* 3. Отступ для иконок, чтобы они не проваливались под системную полосу */
+    /* Эти стили остаются, они нужны для содержимого */
     padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: content-box;
 }
+
+
 
 
 /* --- 4. Стили для ссылок и карточек (сохранены ваши стили) --- */
@@ -133,8 +130,8 @@ nav a:last-child .card::after { display: none; }
         height: 80px;
     }
     .mainContent {
-        /* Отступ = высота навбара + (20px только для iPhone) */
-        bottom: calc(80px + (20px * var(--is-notch-device)));
+        /* Отступ меняется вместе с высотой nav */
+        bottom: 80px;
     }
     .card img {
         width: 60px;
