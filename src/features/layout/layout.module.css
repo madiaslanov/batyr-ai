@@ -28,23 +28,24 @@
 /* Она остается фиксированной, как вы и хотели */
 nav {
     position: fixed;
-    bottom: -20px;
+    /* bottom: -20px; <-- УДАЛЯЕМ ЭТУ СТРОКУ */
     left: 0;
     right: 0;
-
-    /* Устанавливаем ТОЛЬКО высоту видимой части */
     height: 109px;
-
     background: #BFA75E;
     display: flex;
     z-index: 1000;
 
-    /* ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ:
-       Мы добавляем отступ, который "приподнимает" иконки,
-       но НЕ РАСТЯГИВАЕТ цветной фон навбара. */
-    padding-bottom: env(safe-area-inset-bottom);
+    /* ✅✅✅ ГЛАВНОЕ ИЗМЕНЕНИЕ: УМНОЕ ВЫЧИСЛЕНИЕ 'bottom' ✅✅✅ */
 
-    /* box-sizing нужен, чтобы padding не увеличивал высоту */
+    /* 1. Вычисляем множитель-флаг: он будет равен 0 для Android и 1 для iPhone */
+    --is-iphone-with-notch: min(1, env(safe-area-inset-bottom));
+
+    /* 2. Применяем ваше смещение (-20px), умножая его на флаг */
+    bottom: calc(0px - 20px * var(--is-iphone-with-notch));
+
+    /* Эти строки остаются без изменений */
+    padding-bottom: env(safe-area-inset-bottom);
     box-sizing: content-box;
 }
 
