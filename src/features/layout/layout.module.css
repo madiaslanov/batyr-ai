@@ -19,8 +19,12 @@
     top: 0;
     left: 0;
     right: 0;
-    /* Отступ равен только высоте ВИДИМОЙ части навбара */
-    bottom: 109px;
+
+    /* Вычисляем флаг так же, как и для nav */
+    --is-notch-device: min(1px, env(safe-area-inset-bottom));
+
+    /* Отступ = высота навбара + (20px только для iPhone) */
+    bottom: calc(109px + (20px * var(--is-notch-device)));
 }
 
 
@@ -28,25 +32,26 @@
 /* Она остается фиксированной, как вы и хотели */
 nav {
     position: fixed;
-    bottom: -20px;
     left: 0;
     right: 0;
-
-    /* Устанавливаем ТОЛЬКО высоту видимой части */
     height: 109px;
-
     background: #BFA75E;
     display: flex;
     z-index: 1000;
-
-    /* ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ:
-       Мы добавляем отступ, который "приподнимает" иконки,
-       но НЕ РАСТЯГИВАЕТ цветной фон навбара. */
-    padding-bottom: env(safe-area-inset-bottom);
-
-    /* box-sizing нужен, чтобы padding не увеличивал высоту */
     box-sizing: content-box;
+
+    /* ✅✅✅ ВОТ РЕШЕНИЕ: УСЛОВНОЕ ПРАВИЛО ДЛЯ 'bottom' ✅✅✅ */
+
+    /* 1. Создаем флаг, который равен 1 на iPhone и 0 на Android */
+    --is-notch-device: min(1px, env(safe-area-inset-bottom));
+
+    /* 2. Применяем ваше смещение (-20px), умножая его на этот флаг */
+    bottom: calc( -20px * var(--is-notch-device) );
+
+    /* 3. Отступ для иконок, чтобы они не проваливались под системную полосу */
+    padding-bottom: env(safe-area-inset-bottom);
 }
+
 
 /* --- 4. Стили для ссылок и карточек (сохранены ваши стили) --- */
 nav a {
@@ -125,14 +130,11 @@ nav a:last-child .card::after { display: none; }
 /* --- 7. Адаптивность (исправлена логика) --- */
 @media (max-height: 850px) {
     nav {
-        /* Уменьшаем высоту видимой части */
         height: 80px;
     }
-
-    /* Контент теперь тоже знает новую высоту навбара */
     .mainContent {
-        /* Контент знает только о видимой высоте */
-        bottom: 80px;
+        /* Отступ = высота навбара + (20px только для iPhone) */
+        bottom: calc(80px + (20px * var(--is-notch-device)));
     }
     .card img {
         width: 60px;
