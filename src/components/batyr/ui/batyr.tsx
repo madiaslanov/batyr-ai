@@ -1,6 +1,9 @@
 // ui/batyr.tsx
+
 import style from "./batyr.module.css";
-import { useState, useEffect } from "react"; // Импортируем хуки
+import { useState, useEffect } from "react";
+// ✅ Импортируем useNavigate для навигации
+import { useNavigate } from "react-router-dom";
 
 interface BatyrProps {
     tgUser?: {
@@ -10,7 +13,7 @@ interface BatyrProps {
     };
     isRecording: boolean;
     isProcessing: boolean;
-    isHistoryEmpty: boolean; // Эта пропса нам все еще нужна
+    isHistoryEmpty: boolean;
     onToggleRecording: () => void;
 }
 
@@ -22,31 +25,23 @@ export const Batyr = ({
                           onToggleRecording,
                       }: BatyrProps) => {
 
-    // Состояние для отображения приветственной подсказки
+    // ✅ Получаем функцию навигации
+    const navigate = useNavigate();
+
     const [showHint, setShowHint] = useState(false);
 
-    // Эффект, который покажет подсказку, если история пуста
     useEffect(() => {
         if (isHistoryEmpty) {
-            // Показываем подсказку при монтировании компонента
             setShowHint(true);
-
-            // Устанавливаем таймер, чтобы скрыть подсказку через 5 секунд
-            const timer = setTimeout(() => {
-                setShowHint(false);
-            }, 5000); // 5000 миллисекунд = 5 секунд
-
-            // Очищаем таймер, если компонент размонтируется раньше
+            const timer = setTimeout(() => setShowHint(false), 5000);
             return () => clearTimeout(timer);
         }
-    }, [isHistoryEmpty]); // Зависимость от isHistoryEmpty
+    }, [isHistoryEmpty]);
 
-    // Обработчик клика, который принудительно скроет подсказку и начнет запись
     const handleToggleRecording = () => {
-        setShowHint(false); // Скрываем подсказку при первом же действии
+        setShowHint(false);
         onToggleRecording();
     };
-
 
     return (
         <div className={style.batyrContent}>
@@ -57,28 +52,29 @@ export const Batyr = ({
                 </div>
             </div>
 
-            {/* Модель Батыра теперь обертка для подсказки */}
             <div className={style.batyrWrapper}>
-                {/* ✅ Новая приветственная подсказка */}
                 {showHint && (
                     <div className={style.welcomeHint}>
-                       Батырды баста, <br/>
+                        Батырды баста, <br/>
                         Маған сұрақ қой, мысалы: <br />
                         <strong>«Алтын Орда қашан құрылды?»</strong>
                     </div>
                 )}
-
                 <div className={style.batyrModel} onClick={handleToggleRecording}>
                     <div className={`${style.statusIndicator} ${isRecording ? style.recording : ''} ${isProcessing ? style.processing : ''}`}>
                         {isProcessing ? '🤔' : (isRecording ? '⏹️' : '🎤')}
                     </div>
-
                     <img
                         src="/homePage/batyr.png"
                         alt="Герой"
                     />
                 </div>
             </div>
+
+            {/* ✅ НОВАЯ КНОПКА ДЛЯ ПЕРЕХОДА К ШЕЖИРЕ */}
+            {/*<div className={style.shezhireButton} onClick={() => navigate('/shezhire')}>*/}
+            {/*    📜 Шежіре*/}
+            {/*</div>*/}
         </div>
     );
 };

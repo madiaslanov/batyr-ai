@@ -87,10 +87,15 @@
 /* Новая приветственная подсказка */
 .welcomeHint {
     position: absolute;
-    top: -20px; /* Располагаем над моделью Батыра */
+    /* ✅ Размещаем нижний край подсказки у верхнего края родителя (.batyrWrapper) */
+    top: 100%;
+
+    /* Эти стили для горизонтального центрирования остаются без изменений */
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.9);
+
+    /* Все остальные ваши стили для внешнего вида */
+    background-color: rgba(255, 255, 255, 0.95);
     color: #2c2c2c;
     padding: 12px 20px;
     border-radius: 16px;
@@ -175,6 +180,35 @@
     animation: spin 2s linear infinite;
 }
 
+.shezhireButton {
+    /* Позиционирование */
+    position: absolute;
+    top: 120px;
+    right: 20px;
+
+    /* Уменьшаем размеры через padding и font-size */
+    padding: 8px 16px;
+    font-size: 14px;
+
+    /* Остальные стили для красоты */
+    background-color: #8b4513;
+    color: white;
+    border-radius: 20px; /* Более скругленные края */
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.shezhireButton:hover {
+    background-color: #a0522d;
+}
+
+.shezhireButton:active {
+    transform: scale(0.98);
+}
+
 /* Анимации */
 
 @keyframes pulseRecording {
@@ -191,7 +225,7 @@
 @keyframes fadeInDown {
     from {
         opacity: 0;
-        transform: translate(-50%, -20px);
+        transform: translate(-50%, -10px);
     }
     to {
         opacity: 1;

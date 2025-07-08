@@ -42,8 +42,8 @@ const Photo = ({
 
     // 3. Определяем массив опций для нашего кастомного селекта
     const genderOptions = [
-        { value: 'male', label: 'Батыр (Мужчина)' },
-        { value: 'female', label: 'Батыр-қыз (Женщина)' },
+        { value: 'male', label: 'Батыр (Ер)' },
+        { value: 'female', label: 'Батыр-қыз (Әйел)' },
     ];
 
     // 4. Создаем обертку для onGenderChange, чтобы соответствовать интерфейсу CustomSelect
@@ -59,11 +59,11 @@ const Photo = ({
     return (
         <div className={styles.container}>
             <div className={styles.headerRow}>
-                <h1 className={styles.title}>🛡️ Стань Батыром</h1>
+                <h1 className={styles.title}>🛡️ Батыр Бол!</h1>
                 <div className={styles.tooltip}>
                     ℹ️
                     <span className={styles.tooltipText}>
-                        Фото должно быть чётким, с хорошим освещением и крупным лицом, смотрящим в камеру. Не покидайте страницу до конца генерации (1-2мин)
+                        Фото анық, жарық жақсы болуы керек. Бетіңіз ірі планда, камераға тік қарап тұрсын. Генерация толық аяқталғанша (1–2 минут) парақшаны жаппаңыз. Дайын болған соң "Чатқа жіберу" ді басуды ұмытпаңыз
                     </span>
                 </div>
             </div>
@@ -85,7 +85,7 @@ const Photo = ({
 
                     {/* 5. Заменяем <select> на <CustomSelect> */}
                     <div className={styles.genderSelector}>
-                        <label>Выберите образ:</label> {/* htmlFor больше не нужен, т.к. нет id */}
+                        <label>Батыр кейіпін таңдаңыз:</label> {/* htmlFor больше не нужен, т.к. нет id */}
                         <CustomSelect
                             options={genderOptions}
                             value={gender}
@@ -96,9 +96,9 @@ const Photo = ({
 
                     {/* Кнопки управления */}
                     <div className={styles.buttonGroup}>
-                        <button className={styles.button} onClick={onClear}>Очистить</button>
+                        <button className={styles.button} onClick={onClear}>Өшіру</button>
                         <button className={styles.button} onClick={onNext} disabled={loading || !userPhoto}>
-                            Далее
+                            Батыр болу
                         </button>
                     </div>
                 </>
@@ -129,11 +129,11 @@ const Photo = ({
                                     onClick={onSendToChat}
                                     disabled={isSending}
                                 >
-                                    {isSending ? '🚀 Отправка...' : 'Отправить в чат'}
+                                    {isSending ? '🚀 Жіберілуде...' : 'Чатқа жіберу'}
                                 </button>
 
                                 <button className={styles.button} onClick={onClear}>
-                                    Загрузить другое
+                                    Басқа фото жүктеу
                                 </button>
                             </>
                         )}

@@ -33,12 +33,12 @@ const PhotoContainer = () => {
 
     const startPolling = (currentJobId: string) => {
         if (isPolling || intervalRef.current) return;
-        setLoadingMessage('⏳ Уменьшаю ваше фото и подбираю образ...');
+        setLoadingMessage('⏳ Батыр кейіпін жасаудамын...');
         setIsPolling(true);
         pollingStartTimeRef.current = Date.now();
         intervalRef.current = setInterval(async () => {
             if (Date.now() - (pollingStartTimeRef.current ?? 0) > POLLING_TIMEOUT_SECONDS * 1000) {
-                alert("Время ожидания результата истекло. Пожалуйста, попробуйте еще раз.");
+                alert("Күту уақыты тым ұзақ. Қайтадан жасап көріңіз.");
                 handleClear();
                 return;
             }
@@ -55,12 +55,12 @@ const PhotoContainer = () => {
                     return;
                 }
                 if (data.status === "failed") {
-                    alert(`Ошибка: ${data.error || "Неизвестная ошибка на сервере"}`);
+                    alert(`Ошибка: ${data.error || "Белгісіз қате"}`);
                     handleClear();
                     return;
                 }
             } catch (err) {
-                alert("Произошла ошибка соединения при проверке статуса. Попробуйте обновить страницу.");
+                alert("Статус қатесі. Қайтадан көріңіз.");
                 handleClear();
             }
         }, 5000);
@@ -85,7 +85,7 @@ const PhotoContainer = () => {
             setResultUrl(storedResultUrl);
             setStep(2);
             setLoading(false);
-            setLoadingMessage("✅ Изображение готово");
+            setLoadingMessage("✅ Суретіңіз дайын");
             return;
         }
         if (storedJobId) {
@@ -118,7 +118,7 @@ const PhotoContainer = () => {
                 handleClear();
             }
         } catch (err) {
-            alert(`Не удалось отправить фото: ${(err as Error).message}`);
+            alert(`Фото жіберу мүмкін емес: ${(err as Error).message}`);
             handleClear();
         }
     };
@@ -162,9 +162,9 @@ const PhotoContainer = () => {
         setIsSending(true);
         try {
             await sendPhotoToChat(resultUrl);
-            alert("Готово! Фото отправлено в ваш чат с ботом. 🚀");
+            alert("Дайын! Фотоны ботпен чатқа жібердім. 🚀");
         } catch (error) {
-            alert(`Не удалось отправить фото: ${(error as Error).message}`);
+            alert(`Фото жіберу мүмкін болмады: ${(error as Error).message}`);
         } finally {
             setIsSending(false);
         }

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import ReactGA from "react-ga4";
 // SwipeRouter больше не нужен здесь
 import Layout from "../features/layout/layout.tsx";
+import {ShezhirePage} from "../components/shezhire/ShezhirePage.tsx";
 
 const TRACKING_ID = "G-2J5SZSQH87";
 
@@ -73,6 +74,7 @@ function App() {
     return (
         <Routes>
             <Route path="/*" element={<Layout />} />
+            <Route path="shezhire" element={<ShezhirePage />} />
         </Routes>
     );
 }
