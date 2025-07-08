@@ -41,7 +41,7 @@ export const useBatyrStore = create<BatyrState>((set) => ({
     loading: false,
     isPolling: false,
     jobId: null,
-    loadingMessage: '⏳ Генерация изображения...',
+    loadingMessage: '⏳ Фото генерциясы...',
     gender: 'male', // Начальное значение
 
     // Определяем сеттеры
@@ -64,7 +64,7 @@ export const useBatyrStore = create<BatyrState>((set) => ({
         loading: false,
         isPolling: false,
         jobId: null,
-        loadingMessage: '⏳ Генерация изображения...',
+        loadingMessage: '⏳ Фото генерциясы...',
         gender: 'male', // Сбрасываем к значению по умолчанию
     }),
 }));
