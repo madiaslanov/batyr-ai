@@ -1,5 +1,5 @@
 import  { useState, useRef, useEffect } from 'react';
-import styles from './customselect.module.css'; // Нужны
+import styles from './customselect.module.css';
 
 type Option = {
     value: string;

@@ -1,11 +1,10 @@
-// src/pages/ShezhirePage/ShezhirePage.tsx
+
 
 import { useState, useEffect } from 'react';
-// ✅ 1. Импортируем useNavigate
+
 import { useNavigate } from 'react-router-dom';
 import style from './ShezhirePage.module.css';
 
-// ВАЖНО: Укажите здесь URL вашего бэкенда
 const BACKEND_URL = "http://127.0.0.1:8000";
 
 interface Person {
@@ -15,7 +14,7 @@ interface Person {
 }
 
 export const ShezhirePage = () => {
-    // ✅ 2. Получаем функцию навигации
+
     const navigate = useNavigate();
 
     const [currentNode, setCurrentNode] = useState<Person | null>(null);
@@ -86,7 +85,6 @@ export const ShezhirePage = () => {
 
     return (
         <div className={style.container}>
-            {/* ✅ 3. ДОБАВЛЯЕМ КНОПКУ ВЫХОДА */}
             <button onClick={() => navigate(-1)} className={style.exitButton}>
                 ← Басты бетке
             </button>

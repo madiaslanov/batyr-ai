@@ -1,4 +1,4 @@
-// src/components/PhotoContainer.tsx
+
 
 import { useEffect, useRef, useState } from "react";
 import Photo from "./ui/photo.tsx";
@@ -123,8 +123,7 @@ const PhotoContainer = () => {
         }
     };
 
-    // Функция handleClear используется кнопкой "Очистить" и должна сбрасывать все.
-    // Она работает правильно. Проблема была в ее вызове из handleFileChange.
+
     const handleClear = () => {
         stopPolling();
         clearLocalStorage();
@@ -132,30 +131,24 @@ const PhotoContainer = () => {
     };
 
 
-    // =================================================================
-    // ИСПРАВЛЕННАЯ ФУНКЦИЯ
-    // =================================================================
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // НЕ вызываем handleClear() или clearAll()
 
-            // Вместо этого, вручную сбрасываем только то, что нужно:
-            // предыдущие результаты и состояние загрузки.
             stopPolling();
             clearLocalStorage();
             setResultUrl(null);
             setJobId(null);
             setLoading(false);
-            setStep(1); // Убедимся, что мы на первом шаге
+            setStep(1);
 
-            // А теперь устанавливаем новое фото. Состояние `gender` не трогаем.
-            const previewUrl = URL.createObjectURL(file);
+           const previewUrl = URL.createObjectURL(file);
             setUserPhoto(file);
             setPreview(previewUrl);
         }
     };
-    // =================================================================
+
 
     const handleSendToChat = async () => {
         if (!resultUrl || isSending) return;

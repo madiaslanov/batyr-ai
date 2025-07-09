@@ -1,13 +1,11 @@
-// src/hooks/useSpeech.ts
+
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-// Интерфейс для сообщений в чате
 export interface ChatMessage {
     role: 'user' | 'assistant';
     content: string;
 }
 
-// Пропсы для хука
 interface UseSpeechProps {
     onNewAnswer: (audioUrl: string) => void;
     onError: (message: string) => void;

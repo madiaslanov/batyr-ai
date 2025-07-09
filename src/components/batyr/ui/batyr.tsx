@@ -1,8 +1,7 @@
-// ui/batyr.tsx
+
 
 import style from "./batyr.module.css";
 import { useState, useEffect } from "react";
-// ✅ Импортируем useNavigate для навигации
 import { useNavigate } from "react-router-dom";
 
 interface BatyrProps {
@@ -25,7 +24,6 @@ export const Batyr = ({
                           onToggleRecording,
                       }: BatyrProps) => {
 
-    // ✅ Получаем функцию навигации
     const navigate = useNavigate();
 
     const [showHint, setShowHint] = useState(false);
@@ -71,10 +69,6 @@ export const Batyr = ({
                 </div>
             </div>
 
-            {/* ✅ НОВАЯ КНОПКА ДЛЯ ПЕРЕХОДА К ШЕЖИРЕ */}
-            {/*<div className={style.shezhireButton} onClick={() => navigate('/shezhire')}>*/}
-            {/*    📜 Шежіре*/}
-            {/*</div>*/}
         </div>
     );
 };

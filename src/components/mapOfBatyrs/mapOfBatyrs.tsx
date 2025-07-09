@@ -1,21 +1,18 @@
-// src/components/mapOfBatyrs/mapOfBatyrs.tsx
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import style from './MapOfBatyrs.module.css';
 import { useMapSpeech } from "../../service/reactHooks/useMapSpeech.ts";
 
-// Объявляем глобальные переменные, чтобы TypeScript их "видел"
 declare global {
     interface Window {
         handleMapClick?: (regionId: string) => void;
         simplemaps_countrymap?: {
-            load: () => void; // Функция для перезагрузки карты
+            load: () => void;
         };
-        simplemaps_countrymap_mapdata?: any; // Данные карты
+        simplemaps_countrymap_mapdata?: any;
     }
 }
 
-// Интерфейсы для данных API
 interface Batyr { name: string; years: string; description: string; image: string | null; }
 interface HistoricalEvent { name: string; period: string; description: string; }
 interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; historical_events: HistoricalEvent[]; }
@@ -24,7 +21,6 @@ interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; 
 const MapOfBatyrs = () => {
     const API_URL = 'https://api.batyrai.com';
 
-    // --- Состояние и логика для Карты ---
     const [regionData, setRegionData] = useState<RegionData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -33,21 +29,19 @@ const MapOfBatyrs = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [isAudioLoading, setIsAudioLoading] = useState(false);
 
-    // Функция остановки озвучки для карты
     const handleStopAudio = useCallback(() => {
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
-            // Не используем revokeObjectURL здесь, чтобы избежать ошибок при повторном воспроизведении
+
             audioRef.current = null;
         }
         setIsSpeaking(false);
     }, []);
 
-    // Функция получения данных при клике на регион
     const handleRegionClick = useCallback(async (regionId: string) => {
         console.log(`✅ Клик из mapdata.js! ▶️ Запрос для региона: ${regionId}`);
-        handleStopAudio(); // Останавливаем озвучку от предыдущего региона
+        handleStopAudio();
         setRegionData(null);
         setError(null);
         setLoading(true);
@@ -70,7 +64,7 @@ const MapOfBatyrs = () => {
         }
     }, [API_URL, handleStopAudio]);
 
-    // ✅✅✅ ОБНОВЛЕННЫЙ ЭФФЕКТ ДЛЯ ИНИЦИАЛИЗАЦИИ КАРТЫ ✅✅✅
+
     useEffect(() => {
         window.handleMapClick = handleRegionClick;
 
@@ -91,11 +85,9 @@ const MapOfBatyrs = () => {
 
         const initializeMap = async () => {
             try {
-                // Последовательно загружаем скрипты
                 await loadScript('/mapdata.js');
                 await loadScript('/countrymap.js');
 
-                // ✅ САМОЕ ГЛАВНОЕ: Принудительно перерисовываем карту
                 if (window.simplemaps_countrymap?.load) {
                     window.simplemaps_countrymap.load();
                     console.log("🗺️ Карта успешно переинициализирована!");
@@ -120,11 +112,10 @@ const MapOfBatyrs = () => {
 
         return () => {
             window.handleMapClick = undefined;
-            handleStopAudio(); // Останавливаем аудио при уходе со страницы
+            handleStopAudio();
         };
     }, [handleRegionClick, handleStopAudio]);
 
-    // Функция для озвучки текста с карты
     const handlePlayAudio = async () => {
         if (!textToReadRef.current || isAudioLoading) return;
 
@@ -169,7 +160,7 @@ const MapOfBatyrs = () => {
     };
 
 
-    // --- Логика для Голосового Ассистента (без изменений) ---
+
     const [isAssistantVisible, setIsAssistantVisible] = useState(false);
     const assistantAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -201,7 +192,7 @@ const MapOfBatyrs = () => {
         }
     };
 
-    // --- JSX (без изменений) ---
+
     return (
         <div className={style.pageContainer}>
             <div className={style.header}>
@@ -263,9 +254,6 @@ const MapOfBatyrs = () => {
                 )}
             </div>
 
-            <button onClick={toggleAssistant} className={style.assistantFab} aria-label="Ассистентті шақыру">
-                🎙️
-            </button>
 
             {isAssistantVisible && (
                 <div className={style.assistantOverlay} onClick={toggleAssistant}>

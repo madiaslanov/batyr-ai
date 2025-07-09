@@ -1,54 +1,39 @@
-# React + TypeScript + Vite
+# 🇰🇿 BatyrAI — Telegram бот об истории Казахстана
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[Перейти к боту → @BatyrAI_bot](https://t.me/BatyrAI_bot)
 
-Currently, two official plugins are available:
+**BatyrAI** — это Telegram-бот, который делает изучение истории Казахстана увлекательным и персонализированным с помощью искусственного интеллекта.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Возможности
 
-## Expanding the ESLint configuration
+- ⚔️ **Генерация образа батыра по фото**  
+  Загрузи своё фото — и получи уникальный портрет в стиле казахского батыра или батыра-женщины.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 🧠 **AI-ассистент по истории Казахстана**  
+  Получай ответы на любые вопросы об исторических событиях, личностях и фактах.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- 🗺️ **Интерактивная карта Казахстана**  
+  Нажми на регион — и узнай, какие батыры и события с ним связаны.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🎯 Цель проекта
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Сформировать у молодёжи интерес к истории и национальной идентичности через современные технологии и ИИ.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## 🛠️ Технологии
+
+- **Frontend:** React, Zustand
+- **Backend:** FastAPI
+- **AI:** Интеграция text-to-speech и моделей генерации изображений
+- **Инфраструктура:** Telegram Bot API, Webhooks
+
+## 🧑‍💻 Автор
+
+Мади Аслан — студент 2 курса КБТУ, frontend-разработчик с опытом работы в React-экосистеме и интересом к ИИ и edtech-проектам.
+
+## 📲 Попробуй прямо сейчас
+
+👉 [@BatyrAI_bot](https://t.me/BatyrAI_bot)
+
+---
+
+⭐ Поддержите проект звёздочкой, если вам близка идея!

@@ -1,15 +1,12 @@
-// src/App.tsx (УПРОЩЕННАЯ ВЕРСИЯ)
 
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ReactGA from "react-ga4";
-// SwipeRouter больше не нужен здесь
 import Layout from "../features/layout/layout.tsx";
 import {ShezhirePage} from "../components/shezhire/ShezhirePage.tsx";
 
 const TRACKING_ID = "G-2J5SZSQH87";
 
-// ... (весь ваш код с declare global и т.д. остается без изменений) ...
 declare global {
     interface Window {
         Telegram: {
@@ -33,7 +30,7 @@ declare global {
 
 
 function App() {
-    // ... (весь ваш код с хуками useState, useNavigate, useEffect остается без изменений) ...
+
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
@@ -68,9 +65,7 @@ function App() {
         );
     }
 
-    // ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ ЗДЕСЬ
-    // Теперь у нас один маршрут, который всегда рендерит Layout.
-    // Layout сам разберется, какую страницу показывать.
+
     return (
         <Routes>
             <Route path="/*" element={<Layout />} />

@@ -1,12 +1,10 @@
-// /src/api.ts
+
 
 import type {Gender} from "../module/useBatyrStore.ts";
 
 const API_BASE_URL = "https://api.batyrai.com";
 
-/**
- * Получает initData и выбрасывает ошибку, если их нет.
- */
+
 const getTelegramInitData = (): string => {
     // @ts-ignore
     const initData = window.Telegram?.WebApp?.initData || '';
@@ -22,17 +20,16 @@ const getTelegramInitData = (): string => {
 export const startFaceSwapTask = async (file: File, gender: Gender): Promise<{ job_id: string, remaining_attempts: number }> => {
     const formData = new FormData();
     formData.append("user_photo", file);
-    formData.append("gender", gender); // Добавляем пол в FormData
+    formData.append("gender", gender);
     const initData = getTelegramInitData();
 
     // @ts-ignore
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
     const headers = new Headers();
-    headers.append('X-Telegram-Init-Data', initData); // Главная защита
+    headers.append('X-Telegram-Init-Data', initData);
 
-    // Эти заголовки больше не нужны для безопасности, т.к. initData содержит все,
-    // но могут быть полезны для логирования на бэкенде. Оставим их.
+
     headers.append('X-Telegram-User-Id', String(tgUser.id));
 
     const encodeHeader = (str: string) => btoa(unescape(encodeURIComponent(str || '')));

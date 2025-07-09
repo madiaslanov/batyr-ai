@@ -1,10 +1,9 @@
-// src/components/ui/photo.tsx
+
 
 import styles from "../photo.module.css";
 import type {Gender} from "../module/useBatyrStore.ts";
 import CustomSelect from "../../../shared/CustomSelect.tsx";
 
-// Определяем тип пропсов для компонента
 type PhotoUIProps = {
     step: 1 | 2;
     userPhoto: File | null;
@@ -18,9 +17,7 @@ type PhotoUIProps = {
     onClear: () => void;
     onNext: () => void;
     onSendToChat: () => void;
-    // 2. ВАЖНО: Тип onGenderChange нужно будет адаптировать в контейнере
-    // или здесь сделать его более общим, например, onGenderChange: (value: Gender) => void;
-    // Для простоты оставим как в оригинале, но адаптируем вызов ниже.
+
     onGenderChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 };
 
@@ -40,16 +37,14 @@ const Photo = ({
                    onGenderChange
                }: PhotoUIProps) => {
 
-    // 3. Определяем массив опций для нашего кастомного селекта
     const genderOptions = [
         { value: 'male', label: 'Батыр (Ер)' },
         { value: 'female', label: 'Батыр-қыз (Әйел)' },
     ];
 
-    // 4. Создаем обертку для onGenderChange, чтобы соответствовать интерфейсу CustomSelect
+
     const handleCustomSelectChange = (value: string) => {
-        // Мы эмулируем событие ChangeEvent, чтобы соответствовать ожидаемому типу
-        // в родительском компоненте (PhotoContainer).
+
         const event = {
             target: { value }
         } as React.ChangeEvent<HTMLSelectElement>;
@@ -68,7 +63,6 @@ const Photo = ({
                 </div>
             </div>
 
-            {/* --- Шаг 1: Выбор фото и образа --- */}
             {step === 1 && (
                 <>
                     {!userPhoto && (
@@ -83,9 +77,8 @@ const Photo = ({
                         </div>
                     )}
 
-                    {/* 5. Заменяем <select> на <CustomSelect> */}
                     <div className={styles.genderSelector}>
-                        <label>Батыр кейіпін таңдаңыз:</label> {/* htmlFor больше не нужен, т.к. нет id */}
+                        <label>Батыр кейіпін таңдаңыз:</label>
                         <CustomSelect
                             options={genderOptions}
                             value={gender}
@@ -94,7 +87,6 @@ const Photo = ({
                         />
                     </div>
 
-                    {/* Кнопки управления */}
                     <div className={styles.buttonGroup}>
                         <button className={styles.button} onClick={onClear}>Өшіру</button>
                         <button className={styles.button} onClick={onNext} disabled={loading || !userPhoto}>
@@ -104,7 +96,6 @@ const Photo = ({
                 </>
             )}
 
-            {/* --- Шаг 2: Отображение процесса и результата --- */}
             {step === 2 && (
                 <>
                     <div className={styles.resultContainer}>

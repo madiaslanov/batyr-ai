@@ -1,4 +1,4 @@
-// src/features/layout/layout.tsx (ОКОНЧАТЕЛЬНОЕ, ПРОВЕРЕННОЕ РЕШЕНИЕ)
+
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from 'react';
@@ -22,7 +22,7 @@ export default function Layout() {
     const swiperRef = useRef<SwiperCore | null>(null);
     const isNavigatingByClick = useRef(false);
 
-    // Этот useEffect отвечает ТОЛЬКО за запуск программного свайпа
+
     useEffect(() => {
         if (swiperRef.current && swiperRef.current.activeIndex !== activeIndex && activeIndex > -1) {
             isNavigatingByClick.current = true;
@@ -30,21 +30,18 @@ export default function Layout() {
         }
     }, [activeIndex]);
 
-    // Эта функция - ЕДИНЫЙ ЦЕНТР УПРАВЛЕНИЯ для ВСЕХ изменений слайдера
+
     const handleSlideChange = (swiper: SwiperCore) => {
-        // ✅ ШАГ 1: Обновляем правила свайпа ПОСЛЕ каждого изменения
-        // Это гарантирует, что правила всегда соответствуют текущему слайду.
+
         swiper.params.allowSlidePrev = swiper.activeIndex > 0;
         swiper.params.allowSlideNext = swiper.activeIndex < pages.length - 1;
-        swiper.update(); // Применяем новые правила немедленно
+        swiper.update();
 
-        // ШАГ 2: Разбираемся, был ли это клик или свайп пользователя
         if (isNavigatingByClick.current) {
-            isNavigatingByClick.current = false; // Сбрасываем флаг и выходим
+            isNavigatingByClick.current = false;
             return;
         }
 
-        // ШАГ 3: Если это был свайп пользователя, меняем URL
         const newPath = pages[swiper.activeIndex];
         if (location.pathname !== newPath) {
             navigate(newPath);
@@ -64,9 +61,7 @@ export default function Layout() {
                     onSlideChange={handleSlideChange}
                     style={{ height: '100%', width: '100%' }}
                     resistanceRatio={0}
-                    // ✅✅✅ ГЛАВНОЕ ИЗМЕНЕНИЕ ✅✅✅
-                    // Мы УДАЛИЛИ пропсы allowSlidePrev и allowSlideNext из JSX.
-                    // Теперь мы управляем ими напрямую, что исключает конфликты.
+
                 >
                     <SwiperSlide><PhotoContainer /></SwiperSlide>
                     <SwiperSlide><BatyrContainer /></SwiperSlide>
