@@ -209,6 +209,171 @@
     transform: scale(0.98);
 }
 
+
+.creditsHolder {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    font-size: 14px;
+    color: #2c3e50;
+    font-weight: 500;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.creditsAmount {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-weight: bold;
+}
+
+.creditsIcon {
+    width: 20px;
+    height: 20px;
+}
+
+/* --- НОВЫЕ СТИЛИ ПОД ЦВЕТ #BFA75E --- */
+
+/* Оверлей с размытием */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(50, 45, 40, 0.6); /* Темно-коричневый полупрозрачный фон */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Сам блок модального окна */
+.modalContent {
+    background: linear-gradient(145deg, rgba(70, 60, 50, 0.9), rgba(45, 40, 35, 0.95)); /* Градиент от темного к очень темному коричневому */
+    color: #EAE0D5; /* Теплый, почти белый цвет для основного текста */
+    padding: 30px;
+    border-radius: 12px; /* Чуть более строгие углы */
+    width: 90%;
+    max-width: 360px;
+    text-align: center;
+    border: 1px solid rgba(191, 167, 94, 0.5); /* Рамка в вашем цвете, полупрозрачная */
+    box-shadow: 0 0 20px rgba(191, 167, 94, 0.15); /* Мягкое свечение в вашем цвете */
+    animation: modalFadeIn 0.4s forwards ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        transform: scale(0.9) translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.modalContent h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #BFA75E; /* <<< ВАШ ЦВЕТ ДЛЯ ЗАГОЛОВКА */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.modalContent p {
+    color: #C3B8A5; /* Приглушенный бежевый для подзаголовка */
+    margin-bottom: 25px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.packageList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Кнопки пакетов */
+.packageItem {
+    width: 100%;
+    padding: 15px;
+    background-color: transparent; /* Прозрачный фон */
+    border: 1px solid rgba(191, 167, 94, 0.4); /* Рамка в вашем цвете */
+    color: #EAE0D5; /* Светлый текст */
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.packageItem::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(191, 167, 94, 0.2), transparent);
+    transition: left 0.4s ease;
+}
+
+.packageItem:hover {
+    background-color: rgba(191, 167, 94, 0.1); /* Легкая подсветка вашим цветом */
+    border-color: rgba(191, 167, 94, 0.8); /* Рамка становится ярче */
+}
+
+.packageItem:hover::before {
+    left: 100%; /* Анимация блика при наведении */
+}
+
+.packageItem:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
+.packageItem:disabled:hover::before {
+    left: -100%; /* Отключаем анимацию блика */
+}
+
+.packageName {
+    font-weight: 600;
+    z-index: 1;
+}
+
+.packagePrice {
+    font-weight: bold;
+    color: #BFA75E; /* <<< ВАШ ЦВЕТ ДЛЯ ЦЕНЫ */
+    background-color: rgba(30, 25, 20, 0.7);
+    padding: 5px 12px;
+    border-radius: 6px;
+    z-index: 1;
+}
+
+/* Лоадер в новом стиле */
+.loader {
+    margin: 20px auto 0;
+    border: 4px solid rgba(191, 167, 94, 0.2); /* Основа в вашем цвете */
+    border-top: 4px solid #BFA75E; /* <<< ВАШ ЦВЕТ ДЛЯ ПОЛОСЫ */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
 /* Анимации */
 
 @keyframes pulseRecording {
