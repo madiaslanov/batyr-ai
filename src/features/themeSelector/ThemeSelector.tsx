@@ -1,4 +1,4 @@
-// src/features/themeSelector/ThemeSelector.tsx
+// src/features/themeSelector/themeSelector.tsx
 
 import { useState, useEffect, useRef } from 'react';
 import styles from './ThemeSelector.module.css'; // Будем использовать новые стили
