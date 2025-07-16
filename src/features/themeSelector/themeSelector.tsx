@@ -1,7 +1,7 @@
 // src/features/themeSelector/themeSelector.tsx
 
 import { useState, useEffect, useRef } from 'react';
-import styles from './ThemeSelector.module.css'; // Будем использовать новые стили
+import styles from './themeSelector.module.css'; // Будем использовать новые стили
 
 const themeOptions = [
     { key: 'kz', name: 'Батыр' },
