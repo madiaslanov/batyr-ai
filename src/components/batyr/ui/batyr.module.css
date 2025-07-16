@@ -37,7 +37,7 @@
     background: linear-gradient(145deg, #cde6f0, #a0c8d7);
     border: 1px solid rgba(255, 255, 255, 0.9);
 
-    margin-top: 40px; /* Немного поднимем */
+    margin-top: 55px; /* Немного поднимем */
     border-radius: 20px; /* Умеренное скругление, как вы и хотели */
     padding: 8px 18px;
     gap: 14px;
@@ -50,6 +50,15 @@
     inset 0 1px 1px rgba(255, 255, 255, 0.7);
 
     transition: transform 0.2s ease;
+}
+
+/* Добавьте это в конец файла batyr.module.css */
+
+.topBar {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 100; /* Выше чем другие элементы */
 }
 
 .description:hover {

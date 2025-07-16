@@ -209,34 +209,8 @@ const MapOfBatyrs = () => {
                 )}
             </div>
 
-            {/* Кнопка вызова ассистента */}
-            <button className={style.assistantFAB} onClick={toggleAssistant}>?</button>
 
-            {isAssistantVisible && (
-                <div className={style.assistantOverlay} onClick={toggleAssistant}>
-                    <div className={style.assistantModal} onClick={(e) => e.stopPropagation()}>
-                        <div className={style.assistantHeader}>
-                            <h3>{t('assistantTitle')}</h3>
-                            <button onClick={toggleAssistant} className={style.closeButton}>×</button>
-                        </div>
-                        <div className={style.chatContainer}>
-                            {history.length === 0 && !isProcessing && (
-                                <div className={style.chatPlaceholder}>{t('assistantPlaceholder')}</div>
-                            )}
-                            {history.map((msg, index) => (
-                                <div key={index} className={msg.role === 'user' ? style.userMsg : style.assistantMsg}>{msg.content}</div>
-                            ))}
-                            {isProcessing && <div className={style.assistantMsg}>{t('thinking')}</div>}
-                        </div>
-                        <div className={style.assistantFooter}>
-                            <button onClick={toggleRecording} className={`${style.micButton} ${isRecording ? style.micRecording : ''}`} disabled={isProcessing}>
-                                {isProcessing ? '⏳' : isRecording ? '■' : '●'}
-                            </button>
-                            <button onClick={clearHistory} className={style.clearButton} disabled={history.length === 0 || isProcessing}>{t('clearHistory')}</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 };

@@ -1,4 +1,4 @@
-// Полностью замените содержимое файла: src/layouts/Layout.tsx
+// src/layouts/Layout.tsx
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from 'react';
@@ -14,26 +14,14 @@ import MapOfBatyrs from "../../components/mapOfBatyrs/mapOfBatyrs.tsx";
 const pages = ['/generatePhoto', '/', '/mapOfBatyrs'];
 
 export default function Layout() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const activeIndex = pages.indexOf(location.pathname);
     const swiperRef = useRef<SwiperCore | null>(null);
     const isNavigatingByClick = useRef(false);
 
-    // Логика для кнопки "Назад"
-    useEffect(() => {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            if (location.pathname !== '/') {
-                tg.BackButton.show();
-            } else {
-                tg.BackButton.hide();
-            }
-        }
-    }, [location.pathname]);
-
-    // Логика для Swiper
+    // Логика Swiper
     useEffect(() => {
         if (swiperRef.current && swiperRef.current.activeIndex !== activeIndex && activeIndex > -1) {
             isNavigatingByClick.current = true;
@@ -42,9 +30,6 @@ export default function Layout() {
     }, [activeIndex]);
 
     const handleSlideChange = (swiper: SwiperCore) => {
-        swiper.params.allowSlidePrev = swiper.activeIndex > 0;
-        swiper.params.allowSlideNext = swiper.activeIndex < pages.length - 1;
-        swiper.update();
         if (isNavigatingByClick.current) {
             isNavigatingByClick.current = false;
             return;
@@ -55,17 +40,9 @@ export default function Layout() {
         }
     };
 
-    const changeLanguage = (lang: string) => {
-        i18n.changeLanguage(lang);
-    };
-
     return (
         <div className={style.appContainer}>
-            <div className={style.langSwitcher}>
-                <button onClick={() => changeLanguage('kz')} className={i18n.language === 'kz' ? style.activeLang : ''}>KZ</button>
-                <button onClick={() => changeLanguage('ru')} className={i18n.language === 'ru' ? style.activeLang : ''}>RU</button>
-                <button onClick={() => changeLanguage('en')} className={i18n.language === 'en' ? style.activeLang : ''}>EN</button>
-            </div>
+            {/* Старый langSwitcher отсюда УБРАН */}
             <div className={style.mainContent}>
                 <Swiper
                     onSwiper={(swiper) => { swiperRef.current = swiper; }}
