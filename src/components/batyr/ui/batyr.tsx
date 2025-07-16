@@ -1,10 +1,11 @@
-// Полностью замените содержимое файла: src/components/batyr/ui/batyr.tsx
-
 import style from "./batyr.module.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import {LanguageSelector} from "../../../features/languageSelector/LanguageSelector.tsx";
+import { LanguageSelector } from "../../../features/languageSelector/LanguageSelector.tsx";
+// ✅ 1. Импортируем наш новый компонент для смены темы
+import { ThemeSelector } from "../../../features/themeSelector/ThemeSelector.tsx";
 
+// --- Интерфейсы оставляем без изменений ---
 interface Package {
     id: string;
     price: string;
@@ -31,8 +32,16 @@ export const Batyr = ({
                           credits, isPaymentModalOpen, isLoadingPayment, onOpenPaymentModal,
                           onClosePaymentModal, onPurchase, packages,
                       }: BatyrProps) => {
+    // Хук для перевода текста остается без изменений
     const { t } = useTranslation();
     const [showHint, setShowHint] = useState(false);
+
+    // ✅ 2. Добавляем новое состояние для хранения выбранной темы. По умолчанию - 'kz'
+    const [selectedTheme, setSelectedTheme] = useState('kz');
+
+    // ✅ 3. Генерируем пути к картинкам на основе состояния `selectedTheme`, а НЕ языка
+    const batyrImagePath = `/homePage/${selectedTheme}-batyr.png`;
+    const backgroundImagePath = `/homePage/${selectedTheme}-background.png`;
 
     useEffect(() => {
         if (isHistoryEmpty) {
@@ -52,17 +61,26 @@ export const Batyr = ({
     };
 
     return (
-        <div className={style.batyrContent}>
-            {/* ✅ --- НАЧАЛО ИЗМЕНЕНИЙ --- */}
-            {/* Добавляем контейнер для элементов в верхней части экрана */}
+        <div
+            className={style.batyrContent}
+            // Фон по-прежнему устанавливаем динамически, но теперь он зависит от `selectedTheme`
+            style={{ backgroundImage: `url(${backgroundImagePath})` }}
+        >
+            {/* ✅ 4. В .topBar теперь два компонента: для выбора языка и для выбора темы */}
             <div className={style.topBar}>
                 <LanguageSelector />
             </div>
-            {/* ✅ --- КОНЕЦ ИЗМЕНЕНИЙ --- */}
+            <div className={style.topLeft}>
+                <ThemeSelector
+                    selectedTheme={selectedTheme}
+                    onSelectTheme={setSelectedTheme}
+                />
+            </div>
+
+            {/* --- Весь остальной код компонента остается БЕЗ ИЗМЕНЕНИЙ --- */}
 
             {isPaymentModalOpen && (
                 <div className={style.modalOverlay} onClick={onClosePaymentModal}>
-                    {/* ... остальная часть модального окна без изменений ... */}
                     <div className={style.modalContent} onClick={(e) => e.stopPropagation()}>
                         <h3>{t('topUpBalance')}</h3>
                         <p>{t('creditsNeeded')}</p>
@@ -79,7 +97,7 @@ export const Batyr = ({
                                 </button>
                             ))}
                         </div>
-                        {isLoadingPayment && <div className={style.loader}>{t('loading')}</div>}
+                        {isLoadingPayment && <div className={style.loader}></div>}
                     </div>
                 </div>
             )}
@@ -108,7 +126,8 @@ export const Batyr = ({
                     <div className={`${style.statusIndicator} ${isRecording ? style.recording : ''} ${isProcessing ? style.processing : ''}`}>
                         {isProcessing ? '🤔' : (isRecording ? '⏹️' : '🎤')}
                     </div>
-                    <img src="/homePage/batyr.png" alt="Batyr" />
+                    {/* ✅ 5. Используем путь к модели, который теперь зависит от `selectedTheme` */}
+                    <img src={batyrImagePath} alt="Selected character" />
                 </div>
             </div>
         </div>
