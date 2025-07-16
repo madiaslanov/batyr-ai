@@ -14,7 +14,7 @@ function App() {
     const navigate = useNavigate();
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
-    // Google Analytics и проверка на мобильное устройство остаются без изменений
+    // Аналитика и проверка на мобильное устройство
     useEffect(() => { ReactGA.initialize(TRACKING_ID); }, []);
     useEffect(() => { ReactGA.send({ hitType: "pageview", page: location.pathname + location.search }); }, [location]);
     useEffect(() => {
@@ -22,41 +22,37 @@ function App() {
         setIsMobile(checkIsMobile());
     }, []);
 
-    // ===== ГЛАВНЫЙ И ЕДИНСТВЕННЫЙ ХУК ИНИЦИАЛИЗАЦИИ =====
+    // Главный хук инициализации
     useEffect(() => {
-        // Функция, которая будет пытаться инициализировать приложение
         const tryInit = () => {
             const tg = window.Telegram?.WebApp;
-
-            // Если объекта tg еще нет, или он не готов, выходим и ждем следующей попытки
             if (!tg || !tg.isReady) {
                 return;
             }
-
-            // Если мы здесь, значит tg готов. Останавливаем интервал.
             clearInterval(initInterval);
 
-            // --- ВЫПОЛНЯЕМ ВСЕ ДЕЙСТВИЯ ОДИН РАЗ ---
+            // --- КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ ЗДЕСЬ ---
 
-            // 1. Разворачиваем на полный экран
+            // 1. Устанавливаем цвет фона и цвет шапки ОДИНАКОВЫМИ
+            const mainColor = '#1a0f3d'; // Твой основной фиолетовый цвет
+            tg.setHeaderColor(mainColor);
+            tg.setBackgroundColor(mainColor);
+
+            // 2. Разворачиваем приложение
             tg.expand();
 
-            // 2. Настраиваем цвета и поведение
+            // 3. Остальные настройки
             tg.enableClosingConfirmation();
-            tg.setBackgroundColor('#1a0f3d');
-            tg.setHeaderColor('#1a0f3d');
-
-            // 3. Настраиваем кнопку "Назад"
             tg.BackButton.onClick(() => navigate(-1));
 
-            // 4. Обработка deep-link
+            // Обработка deep-link
             if (tg.initDataUnsafe?.start_param) {
                 const startParam = tg.initDataUnsafe.start_param;
                 if (startParam === 'generatePhoto') navigate('/generatePhoto', { replace: true });
                 else if (startParam === 'mapOfBatyrs') navigate('/mapOfBatyrs', { replace: true });
             }
 
-            // 5. Убираем сплэш-скрин
+            // Убираем сплэш-скрин
             const splash = document.getElementById('splash-screen');
             if (splash) {
                 splash.classList.add('hidden');
@@ -64,20 +60,15 @@ function App() {
             }
         };
 
-        // Запускаем tg.ready() как можно раньше.
-        // Это асинхронный процесс, и мы будем проверять его готовность.
         window.Telegram?.WebApp?.ready();
-
-        // Создаем интервал, который будет вызывать tryInit каждые 100мс
         const initInterval = setInterval(tryInit, 100);
 
-        // Очищаем интервал при размонтировании компонента, чтобы избежать утечек
         return () => {
             clearInterval(initInterval);
         };
-    }, [navigate]); // Зависимость только от navigate
+    }, [navigate]);
 
-    // Обновляем видимость кнопки "Назад" при смене роута
+    // Обновляем видимость кнопки "Назад"
     useEffect(() => {
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -89,16 +80,14 @@ function App() {
         }
     }, [location.pathname]);
 
-    if (isMobile === null) {
-        return null;
-    }
+    // --- Отображение компонентов ---
+    if (isMobile === null) return null;
 
     if (!isMobile) {
-        // Эта логика остается, она корректна
         const splash = document.getElementById('splash-screen');
         if (splash) splash.remove();
         return (
-            <div style={{ background: '#1a0f3d', color: 'white', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '1rem' }}>
+            <div style={{ background: '#1a0f3d', color: 'white', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                 <div>
                     <h2>{t('mobileOnly')}</h2>
                     <p>{t('openOnPhone')}</p>

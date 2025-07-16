@@ -22,16 +22,63 @@
 </head>
 <body>
 <div id="splash-screen">
-  <!-- Убедись, что файл /splash-logo.png существует в папке /public -->
+  <!-- Имя файла логотипа должно быть правильным -->
   <img src="/splash-logo.jpg" alt="BatyrAI Logo" class="splash-logo" />
   <h1 class="splash-title">BatyrAI</h1>
   <p class="splash-text">Загрузка ...</p>
 </div>
 
-<!-- Важно: root теперь не скрыт -->
-<div id="root"></div>
+<div id="root" style="display: none;"></div>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<script>
+  function initializeTelegramApp() {
+    if (window.Telegram && window.Telegram.WebApp) {
+      const tg = window.Telegram.WebApp;
+
+      // --- ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ---
+      tg.ready();
+      tg.expand();
+      tg.enableClosingConfirmation();
+      tg.setBackgroundColor('#1a0f3d');
+      tg.setHeaderColor('#1a0f3d');
+
+      // --- КНОПКА НАЗАД ---
+      tg.BackButton.hide();
+      tg.BackButton.onClick(() => {
+        window.history.go(-1);
+      });
+
+      // --- ОБРАБОТКА DEEP LINK (start_param) ---
+      // Эта логика перенаправит пользователя на нужную страницу ДО того, как React отрендерит главную
+      if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+        const startParam = tg.initDataUnsafe.start_param;
+        if (startParam === 'generatePhoto') {
+          window.location.hash = '/generatePhoto';
+        } else if (startParam === 'mapOfBatyrs') {
+          window.location.hash = '/mapOfBatyrs';
+        }
+      }
+
+      // --- УБИРАЕМ СПЛЭШ-СКРИН ---
+      const splash = document.getElementById('splash-screen');
+      const root = document.getElementById('root');
+      if (splash && root) {
+        root.style.display = 'flex';
+        splash.classList.add('hidden');
+        setTimeout(() => {
+          splash.remove();
+        }, 600);
+      }
+
+    } else {
+      setTimeout(initializeTelegramApp, 50);
+    }
+  }
+  initializeTelegramApp();
+</script>
+
 <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
