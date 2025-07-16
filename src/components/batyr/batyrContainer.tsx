@@ -1,3 +1,4 @@
+// Полностью замените содержимое файла BatyrContainer.tsx
 
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { Batyr } from "./ui/batyr";
@@ -43,7 +44,6 @@ export const BatyrContainer = () => {
         fetchUserStatus();
     }, [fetchUserStatus]);
 
-    // Функция для обработки покупки
     const handlePurchase = async (packageId: string) => {
         setIsLoadingPayment(true);
         try {
@@ -70,7 +70,6 @@ export const BatyrContainer = () => {
                     setPaymentModalOpen(false);
                     fetchUserStatus();
                 } else if (status === 'cancelled') {
-
                 } else {
                     window.Telegram.WebApp.showAlert("Оплата не удалась.");
                 }
