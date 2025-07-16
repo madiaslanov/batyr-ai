@@ -1,37 +1,41 @@
-
-
 import type {Gender} from "../module/useBatyrStore.ts";
+
 
 const API_BASE_URL = "https://api.batyrai.com";
 
-
-const getTelegramInitData = (): string => {
+// FIX: Добавили новый параметр lang
+const getTelegramInitData = (lang: string): string => {
     // @ts-ignore
     const initData = window.Telegram?.WebApp?.initData || '';
     if (!initData) {
-        throw new Error("Не удалось получить данные авторизации Telegram. Пожалуйста, перезапустите приложение.");
+        // FIX: Ошибка теперь зависит от языка, хотя t() тут недоступен напрямую
+        const errorMessages: { [key: string]: string } = {
+            ru: "Не удалось получить данные авторизации Telegram. Пожалуйста, перезапустите приложение.",
+            en: "Failed to get Telegram authorization data. Please restart the app.",
+            kz: "Telegram авторизация деректерін алу мүмкін болмады. Қосымшаны қайта іске қосыңыз.",
+        };
+        throw new Error(errorMessages[lang] || errorMessages['ru']);
     }
     return initData;
 };
 
-/**
- * Отправляет фото и пол на сервер для начала генерации.
- */
-export const startFaceSwapTask = async (file: File, gender: Gender): Promise<{ job_id: string, remaining_attempts: number }> => {
+// FIX: Добавили параметр `lang`
+export const startFaceSwapTask = async (file: File, gender: Gender, lang: string): Promise<{ job_id: string, remaining_attempts: number }> => {
     const formData = new FormData();
     formData.append("user_photo", file);
     formData.append("gender", gender);
-    const initData = getTelegramInitData();
+    const initData = getTelegramInitData(lang);
 
     // @ts-ignore
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
     const headers = new Headers();
     headers.append('X-Telegram-Init-Data', initData);
+    headers.append('Accept-Language', lang); // FIX: Добавляем заголовок с языком
 
-
+    // Эти заголовки не стандартные и могут вызывать проблемы с некоторыми серверами,
+    // но если бэкенд их ожидает, оставляем.
     headers.append('X-Telegram-User-Id', String(tgUser.id));
-
     const encodeHeader = (str: string) => btoa(unescape(encodeURIComponent(str || '')));
     headers.append('X-Telegram-Username', encodeHeader(tgUser.username));
     headers.append('X-Telegram-First-Name', encodeHeader(tgUser.first_name));
@@ -43,45 +47,44 @@ export const startFaceSwapTask = async (file: File, gender: Gender): Promise<{ j
             headers: headers,
         });
 
+        const data = await response.json();
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: "Произошла неизвестная ошибка." }));
-            throw new Error(errorData.detail);
+            // Теперь бэкенд вернет ошибку на нужном языке в поле `detail`
+            throw new Error(data.detail || "Произошла неизвестная ошибка.");
         }
-        return await response.json();
+        return data;
     } catch (error) {
         console.error("Failed to start face swap task:", error);
         throw error;
     }
 };
 
-/**
- * Проверяет статус задачи на сервере.
- */
-export const getTaskStatus = async (jobId: string): Promise<any> => {
+// FIX: Добавили параметр `lang`
+export const getTaskStatus = async (jobId: string, lang: string): Promise<any> => {
     const headers = new Headers();
-    headers.append('X-Telegram-Init-Data', getTelegramInitData());
+    headers.append('X-Telegram-Init-Data', getTelegramInitData(lang));
+    headers.append('Accept-Language', lang); // FIX: Добавляем заголовок с языком
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/task-status/${jobId}`, { headers });
+        const data = await response.json();
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: "Задача не найдена." }));
-            throw new Error(errorData.detail);
+            throw new Error(data.detail || "Задача не найдена.");
         }
-        return await response.json();
+        return data;
     } catch (error){
-    console.error(`Failed to get status for job ${jobId}:`, error);
-    throw error;
-}
+        console.error(`Failed to get status for job ${jobId}:`, error);
+        throw error;
+    }
 };
 
-/**
- * Отправляет запрос на бэкенд, чтобы тот прислал готовое фото в чат с ботом.
- */
-export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: string }> => {
-    const initData = getTelegramInitData();
+// FIX: Добавили параметр `lang`
+export const sendPhotoToChat = async (imageUrl: string, lang: string): Promise<{ status: string }> => {
+    const initData = getTelegramInitData(lang);
 
     const headers = new Headers();
     headers.append('X-Telegram-Init-Data', initData);
+    headers.append('Accept-Language', lang); // FIX: Добавляем заголовок с языком
     headers.append('Content-Type', 'application/json');
 
     try {
@@ -91,13 +94,11 @@ export const sendPhotoToChat = async (imageUrl: string): Promise<{ status: strin
             body: JSON.stringify({ imageUrl: imageUrl }),
         });
 
+        const data = await response.json();
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: "Сервер вернул ошибку при отправке фото" }));
-            throw new Error(errorData.detail);
+            throw new Error(data.detail || "Сервер вернул ошибку при отправке фото");
         }
-
-        return await response.json();
-
+        return data;
     } catch (error) {
         console.error("Ошибка при запросе на отправку фото в чат:", error);
         throw error;

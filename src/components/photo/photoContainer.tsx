@@ -1,50 +1,60 @@
+// Полностью замените содержимое файла: src/components/photo/photoContainer.tsx
 
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import Photo from "./ui/photo.tsx";
-import {type Gender, useBatyrStore} from "./module/useBatyrStore.ts";
-import {getTaskStatus, sendPhotoToChat, startFaceSwapTask} from "./api";
+import { type Gender, useBatyrStore } from "./module/useBatyrStore.ts";
+import { getTaskStatus, sendPhotoToChat, startFaceSwapTask } from "./api";
 
-const POLLING_TIMEOUT_SECONDS = 100;
+const POLLING_TIMEOUT_SECONDS = 120;
 
 const PhotoContainer = () => {
+    const { t, i18n } = useTranslation();
     const {
-        step, setStep,
-        userPhoto, setUserPhoto,
-        preview, setPreview,
-        loading, setLoading,
-        resultUrl, setResultUrl,
-        jobId, setJobId,
-        clearAll,
-        isPolling, setIsPolling,
-        loadingMessage, setLoadingMessage,
-        gender, setGender,
+        step, setStep, userPhoto, setUserPhoto, preview, setPreview, loading, setLoading,
+        resultUrl, setResultUrl, setJobId, clearAll, isPolling, setIsPolling,
+        loadingMessage, setLoadingMessage, gender, setGender,
     } = useBatyrStore();
 
     const [isSending, setIsSending] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const pollingStartTimeRef = useRef<number | null>(null);
 
-    const clearLocalStorage = () => {
+    const stopPolling = useCallback(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+        setIsPolling(false);
+        pollingStartTimeRef.current = null;
+    }, [setIsPolling]);
+
+    const handleClear = useCallback(() => {
+        stopPolling();
         localStorage.removeItem("batyr_job_id");
         localStorage.removeItem("batyr_result_url");
         localStorage.removeItem("batyr_preview");
-    };
+        clearAll();
+    }, [stopPolling, clearAll]);
 
-    const startPolling = (currentJobId: string) => {
+
+    const startPolling = useCallback((currentJobId: string) => {
         if (isPolling || intervalRef.current) return;
-        setLoadingMessage('⏳ Батыр кейіпін жасаудамын...');
+
+        setLoadingMessage(t('generatingMessage'));
         setIsPolling(true);
         pollingStartTimeRef.current = Date.now();
+
         intervalRef.current = setInterval(async () => {
             if (Date.now() - (pollingStartTimeRef.current ?? 0) > POLLING_TIMEOUT_SECONDS * 1000) {
-                alert("Күту уақыты тым ұзақ. Қайтадан жасап көріңіз.");
+                alert(t('errorTimeout')); // FIX: Возвращаем alert
                 handleClear();
                 return;
             }
             try {
-                const data = await getTaskStatus(currentJobId);
+                const data = await getTaskStatus(currentJobId, i18n.language);
                 if (data.message) { setLoadingMessage(data.message); }
+
                 if (data.status === "completed") {
                     stopPolling();
                     setResultUrl(data.result_url);
@@ -52,42 +62,35 @@ const PhotoContainer = () => {
                     localStorage.setItem("batyr_result_url", data.result_url);
                     if (preview) { localStorage.setItem("batyr_preview", preview); }
                     localStorage.removeItem("batyr_job_id");
-                    return;
-                }
-                if (data.status === "failed") {
-                    alert(`Ошибка: ${data.error || "Белгісіз қате"}`);
+                    setLoadingMessage(t('photoReadyMessage'));
+                } else if (data.status === "failed") {
+                    alert(data.error || t('errorUnknown')); // FIX: Возвращаем alert
                     handleClear();
-                    return;
                 }
             } catch (err) {
-                alert("Статус қатесі. Қайтадан көріңіз.");
+                alert((err as Error).message); // FIX: Возвращаем alert
                 handleClear();
             }
         }, 5000);
-    };
-
-    const stopPolling = () => {
-        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-        setIsPolling(false);
-        pollingStartTimeRef.current = null;
-    };
+    }, [isPolling, setLoadingMessage, t, setIsPolling, i18n.language, stopPolling, setResultUrl, setLoading, preview, handleClear]);
 
     useEffect(() => {
-        // @ts-ignore
         const tg = window.Telegram?.WebApp;
-        if (!tg) { return; }
-        tg.ready();
+        if (tg) tg.ready();
+
         const storedJobId = localStorage.getItem("batyr_job_id");
         const storedResultUrl = localStorage.getItem("batyr_result_url");
         const storedPreview = localStorage.getItem("batyr_preview");
+
         if (storedResultUrl && storedPreview) {
             setPreview(storedPreview);
             setResultUrl(storedResultUrl);
             setStep(2);
             setLoading(false);
-            setLoadingMessage("✅ Суретіңіз дайын");
+            setLoadingMessage(t('photoReadyMessage'));
             return;
         }
+
         if (storedJobId) {
             setJobId(storedJobId);
             setPreview(storedPreview || null);
@@ -96,8 +99,9 @@ const PhotoContainer = () => {
             startPolling(storedJobId);
             return;
         }
-        handleClear();
+
         return () => stopPolling();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleNext = async () => {
@@ -105,59 +109,40 @@ const PhotoContainer = () => {
         setStep(2);
         setLoading(true);
         setResultUrl(null);
-        clearLocalStorage();
+        localStorage.removeItem("batyr_job_id");
+        localStorage.removeItem("batyr_result_url");
+
         try {
-            const data = await startFaceSwapTask(userPhoto, gender);
-            if (data.job_id) {
-                setJobId(data.job_id);
-                localStorage.setItem("batyr_job_id", data.job_id);
-                if (preview) { localStorage.setItem("batyr_preview", preview); }
-                startPolling(data.job_id);
-            } else {
-                alert("Ошибка запуска генерации. Пожалуйста, попробуйте снова.");
-                handleClear();
-            }
+            const data = await startFaceSwapTask(userPhoto, gender, i18n.language);
+            setJobId(data.job_id);
+            localStorage.setItem("batyr_job_id", data.job_id);
+            if (preview) { localStorage.setItem("batyr_preview", preview); }
+            startPolling(data.job_id);
         } catch (err) {
-            alert(`Фото жіберу мүмкін емес: ${(err as Error).message}`);
+            alert((err as Error).message); // FIX: Возвращаем alert
             handleClear();
         }
     };
 
-
-    const handleClear = () => {
-        stopPolling();
-        clearLocalStorage();
-        clearAll();
-    };
-
-
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-
-            stopPolling();
-            clearLocalStorage();
-            setResultUrl(null);
-            setJobId(null);
-            setLoading(false);
-            setStep(1);
-
-           const previewUrl = URL.createObjectURL(file);
+            handleClear();
+            const previewUrl = URL.createObjectURL(file);
             setUserPhoto(file);
             setPreview(previewUrl);
+            setStep(1);
         }
     };
-
 
     const handleSendToChat = async () => {
         if (!resultUrl || isSending) return;
         setIsSending(true);
         try {
-            await sendPhotoToChat(resultUrl);
-            alert("Дайын! Фотоны ботпен чатқа жібердім. 🚀");
+            await sendPhotoToChat(resultUrl, i18n.language);
+            alert(t('photoSentSuccess')); // FIX: alert об успехе
         } catch (error) {
-            alert(`Фото жіберу мүмкін болмады: ${(error as Error).message}`);
+            alert((error as Error).message); // FIX: Возвращаем alert
         } finally {
             setIsSending(false);
         }
@@ -173,7 +158,7 @@ const PhotoContainer = () => {
             preview={preview}
             loading={loading}
             resultUrl={resultUrl}
-            userPhoto={userPhoto}
+            userPhoto={userPhoto} /* Передаем userPhoto для дизейбла кнопки */
             onNext={handleNext}
             onClear={handleClear}
             onFileChange={handleFileChange}

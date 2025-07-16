@@ -1,8 +1,9 @@
-
+// Полностью замените содержимое файла: src/components/photo/ui/photo.tsx
 
 import styles from "../photo.module.css";
 import type {Gender} from "../module/useBatyrStore.ts";
 import CustomSelect from "../../../shared/CustomSelect.tsx";
+import { useTranslation } from "react-i18next";
 
 type PhotoUIProps = {
     step: 1 | 2;
@@ -17,34 +18,22 @@ type PhotoUIProps = {
     onClear: () => void;
     onNext: () => void;
     onSendToChat: () => void;
-
     onGenderChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 };
 
 const Photo = ({
-                   step,
-                   userPhoto,
-                   preview,
-                   resultUrl,
-                   loading,
-                   isSending,
-                   loadingMessage,
-                   gender,
-                   onFileChange,
-                   onClear,
-                   onNext,
-                   onSendToChat,
-                   onGenderChange
+                   step, userPhoto, preview, resultUrl, loading, isSending, loadingMessage,
+                   gender, onFileChange, onClear, onNext, onSendToChat, onGenderChange
                }: PhotoUIProps) => {
 
+    const { t } = useTranslation();
+
     const genderOptions = [
-        { value: 'male', label: 'Батыр (Ер)' },
-        { value: 'female', label: 'Батыр-қыз (Әйел)' },
+        { value: 'male', label: t('genderMale') },
+        { value: 'female', label: t('genderFemale') },
     ];
 
-
     const handleCustomSelectChange = (value: string) => {
-
         const event = {
             target: { value }
         } as React.ChangeEvent<HTMLSelectElement>;
@@ -54,18 +43,16 @@ const Photo = ({
     return (
         <div className={styles.container}>
             <div className={styles.headerRow}>
-                <h1 className={styles.title}>🛡️ Батыр Бол!</h1>
+                <h1 className={styles.title}>{t('beBatyr')}</h1>
                 <div className={styles.tooltip}>
                     ℹ️
-                    <span className={styles.tooltipText}>
-                        Фото анық, жарық жақсы болуы керек. Бетіңіз ірі планда, камераға тік қарап тұрсын. Генерация толық аяқталғанша (1–2 минут) парақшаны жаппаңыз. Дайын болған соң "Чатқа жіберу" ді басуды ұмытпаңыз
-                    </span>
+                    <span className={styles.tooltipText}>{t('photoTooltip')}</span>
                 </div>
             </div>
 
             {step === 1 && (
                 <>
-                    {!userPhoto && (
+                    {!preview && (
                         <label className={styles.uploadLabel}>
                             <input type="file" accept="image/*" onChange={onFileChange} hidden/>
                             <div className={styles.inputIcon}></div>
@@ -73,24 +60,24 @@ const Photo = ({
                     )}
                     {preview && (
                         <div className={styles.preview}>
-                            <img src={preview} alt="Превью" className={styles.previewImage}/>
+                            <img src={preview} alt="Preview" className={styles.previewImage}/>
                         </div>
                     )}
 
                     <div className={styles.genderSelector}>
-                        <label>Батыр кейіпін таңдаңыз:</label>
+                        <label>{t('chooseBatyrType')}</label>
                         <CustomSelect
                             options={genderOptions}
                             value={gender}
                             onChange={handleCustomSelectChange}
-                            disabled={!!userPhoto}
+                            disabled={!!preview || loading}
                         />
                     </div>
 
                     <div className={styles.buttonGroup}>
-                        <button className={styles.button} onClick={onClear}>Өшіру</button>
+                        <button className={styles.button} onClick={onClear}>{t('clear')}</button>
                         <button className={styles.button} onClick={onNext} disabled={loading || !userPhoto}>
-                            Батыр болу
+                            {loading ? t('loading') : t('becomeBatyr')}
                         </button>
                     </div>
                 </>
@@ -101,13 +88,13 @@ const Photo = ({
                     <div className={styles.resultContainer}>
                         {loading && (
                             <div className={styles.loadingIndicator}>
-                                <p className={styles.loading}>{loadingMessage}</p>
+                                <p className={styles.loading}>{loadingMessage || t('generatingMessage')}</p>
                             </div>
                         )}
                         {!loading && resultUrl && (
                             <div className={styles.resultContent}>
-                                <p className={styles.loading}>{loadingMessage}</p>
-                                <img src={resultUrl} alt="Результат" className={styles.resultImage}/>
+                                <p className={styles.loading}>{t('photoReadyMessage')}</p>
+                                <img src={resultUrl} alt="Result" className={styles.resultImage}/>
                             </div>
                         )}
                     </div>
@@ -120,13 +107,18 @@ const Photo = ({
                                     onClick={onSendToChat}
                                     disabled={isSending}
                                 >
-                                    {isSending ? '🚀 Жіберілуде...' : 'Чатқа жіберу'}
+                                    {isSending ? t('sending') : t('sendToChat')}
                                 </button>
 
                                 <button className={styles.button} onClick={onClear}>
-                                    Басқа фото жүктеу
+                                    {t('uploadAnotherPhoto')}
                                 </button>
                             </>
+                        )}
+                        {loading && (
+                            <button className={styles.button} onClick={onClear}>
+                                {t('cancel')}
+                            </button>
                         )}
                     </div>
                 </>

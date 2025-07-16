@@ -1,21 +1,16 @@
-// Полностью замените содержимое файла BatyrContainer.tsx
+// Полностью замени содержимое файла: src/components/batyr/batyrContainer.tsx
 
 import { useRef, useCallback, useState, useEffect } from 'react';
+import { useTranslation } from "react-i18next";
 import { Batyr } from "./ui/batyr";
 import { useSpeech } from "../../service/reactHooks/useSpeech.ts";
 
-declare global {
-    interface Window { Telegram: { WebApp: any; }; }
-}
+declare global { interface Window { Telegram: any; } }
 
 const API_BASE_URL = "https://api.batyrai.com";
-const PACKAGES = [
-    { id: "1_gen", name: "1 генерация", price: "100 тг" },
-    { id: "5_gen", name: "5 генераций", price: "450 тг" },
-    { id: "10_gen", name: "10 генераций", price: "800 тг" },
-];
 
 export const BatyrContainer = () => {
+    const { t } = useTranslation();
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
@@ -23,19 +18,25 @@ export const BatyrContainer = () => {
     const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
     const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 
+    // Пакеты теперь формируются на основе текущего языка
+    const PACKAGES = [
+        { id: "5_gen", count: 5, price: "500 тг" },
+        { id: "10_gen", count: 10, price: "800 тг" },
+    ];
+
     const fetchUserStatus = useCallback(async () => {
         if (!window.Telegram?.WebApp?.initData) return;
         try {
             const response = await fetch(`${API_BASE_URL}/api/user/status`, {
                 headers: { 'X-Telegram-Init-Data': window.Telegram.WebApp.initData },
             });
-            if (!response.ok) throw new Error("Не удалось получить баланс");
+            if (!response.ok) throw new Error("Failed to get balance");
             const data = await response.json();
             setCredits(data.credits);
         } catch (error) {
-            console.error("Ошибка при получении статуса пользователя:", error);
+            console.error("Error fetching user status:", error);
             if (credits !== null) {
-                window.Telegram.WebApp.showAlert("Не удалось загрузить ваш баланс.");
+                window.Telegram.WebApp.showAlert("Failed to load your balance.");
             }
         }
     }, [credits]);
@@ -57,25 +58,24 @@ export const BatyrContainer = () => {
             });
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || 'Ошибка создания счета');
+                throw new Error(errorData.detail || 'Failed to create invoice');
             }
             const data = await response.json();
             window.Telegram.WebApp.openInvoice(data.invoice_link, (status: string) => {
                 if (status === 'paid') {
                     window.Telegram.WebApp.showPopup({
-                        title: 'Успех!',
-                        message: 'Оплата прошла успешно! Ваш баланс обновлен.',
+                        title: 'Success!',
+                        message: 'Payment was successful! Your balance has been updated.',
                         buttons: [{ type: 'ok' }]
                     });
                     setPaymentModalOpen(false);
                     fetchUserStatus();
-                } else if (status === 'cancelled') {
-                } else {
-                    window.Telegram.WebApp.showAlert("Оплата не удалась.");
+                } else if (status !== 'cancelled') {
+                    window.Telegram.WebApp.showAlert("Payment failed.");
                 }
             });
         } catch (error: any) {
-            window.Telegram.WebApp.showAlert(`Ошибка: ${error.message}`);
+            window.Telegram.WebApp.showAlert(`Error: ${error.message}`);
         } finally {
             setIsLoadingPayment(false);
         }
@@ -85,7 +85,7 @@ export const BatyrContainer = () => {
         if (audioPlayerRef.current) audioPlayerRef.current.pause();
         const newAudio = new Audio(audioUrl);
         audioPlayerRef.current = newAudio;
-        newAudio.play().catch(e => console.error("Ошибка воспроизведения аудио:", e));
+        newAudio.play().catch(e => console.error("Audio playback error:", e));
         newAudio.onended = () => URL.revokeObjectURL(audioUrl);
     }, []);
 

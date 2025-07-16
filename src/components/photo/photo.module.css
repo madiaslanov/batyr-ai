@@ -246,6 +246,9 @@
     width: 80%;
     height: auto;
 }
+
+
+
 @media (max-width: 480px) {
     .title {
         font-size: 1.5rem;

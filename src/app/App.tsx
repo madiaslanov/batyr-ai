@@ -1,36 +1,19 @@
+// Полностью замени содержимое файла: src/App.tsx
 
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useTranslation } from "react-i18next";
 import ReactGA from "react-ga4";
 import Layout from "../features/layout/layout.tsx";
-import {ShezhirePage} from "../components/shezhire/ShezhirePage.tsx";
 
 const TRACKING_ID = "G-2J5SZSQH87";
 
 declare global {
-    interface Window {
-        Telegram: {
-            WebApp: {
-                ready: () => void;
-                expand: () => void;
-                enableClosingConfirmation: () => void;
-                setBackgroundColor: (color: string) => void;
-                setHeaderColor: (color: 'bg_color' | 'secondary_bg_color' | string) => void;
-                isHeaderVisible: boolean;
-                initDataUnsafe?: {
-                    start_param?: string;
-                };
-            };
-        };
-    }
-    interface ScreenOrientation {
-        lock(orientation: 'portrait-primary'): Promise<void>;
-    }
+    interface Window { Telegram: any; ScreenOrientation: any; }
 }
 
-
 function App() {
-
+    const { t } = useTranslation();
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
@@ -58,18 +41,16 @@ function App() {
         return (
             <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '1rem' }}>
                 <div>
-                    <h2>⚠️ Қолданба тек мобильді құрылғыларға арналған</h2>
-                    <p>Сайтты телефон арқылы ашыңыз 📱</p>
+                    <h2>{t('mobileOnly')}</h2>
+                    <p>{t('openOnPhone')}</p>
                 </div>
             </div>
         );
     }
 
-
     return (
         <Routes>
             <Route path="/*" element={<Layout />} />
-            <Route path="shezhire" element={<ShezhirePage />} />
         </Routes>
     );
 }

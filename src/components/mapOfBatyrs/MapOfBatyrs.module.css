@@ -183,6 +183,38 @@
     background-color: #a03226;
 }
 
+/* Добавьте этот код в конец файла: src/components/mapOfBatyrs/MapOfBatyrs.module.css */
+
+.assistantFAB {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #007bff; /* Или любой другой цвет, подходящий под ваш дизайн */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 30px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+}
+
+.assistantFAB:hover {
+    transform: scale(1.05);
+    background-color: #0056b3;
+}
+
+.assistantFAB:active {
+    transform: scale(0.95);
+}
+
 
 .assistantFab {
     display: none;

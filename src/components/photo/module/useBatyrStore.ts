@@ -1,3 +1,4 @@
+// Полностью замените содержимое файла: src/components/photo/module/useBatyrStore.ts
 
 import { create } from 'zustand';
 
@@ -37,7 +38,7 @@ export const useBatyrStore = create<BatyrState>((set) => ({
     loading: false,
     isPolling: false,
     jobId: null,
-    loadingMessage: '⏳ Фото генерциясы...',
+    loadingMessage: '',
     gender: 'male',
 
 
@@ -59,7 +60,7 @@ export const useBatyrStore = create<BatyrState>((set) => ({
         loading: false,
         isPolling: false,
         jobId: null,
-        loadingMessage: '⏳ Фото генерциясы...',
+        loadingMessage: '',
         gender: 'male',
     }),
 }));

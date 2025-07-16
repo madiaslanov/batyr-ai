@@ -47,7 +47,43 @@ nav {
     box-sizing: content-box;
 }
 
+/* Добавьте этот код в конец файла: src/features/layout/layout.module.css */
 
+.langSwitcher {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    z-index: 1000;
+    display: flex;
+    gap: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 4px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.langSwitcher button {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    opacity: 0.7;
+}
+
+.langSwitcher button:hover {
+    opacity: 1;
+}
+
+.langSwitcher button.activeLang {
+    background-color: #fff;
+    color: #333;
+    opacity: 1;
+}
 
 
 /* --- 4. Стили для ссылок и карточек (сохранены ваши стили) --- */

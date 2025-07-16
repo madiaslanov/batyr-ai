@@ -1,13 +1,19 @@
-import {StrictMode} from 'react'
-import {createRoot} from 'react-dom/client'
-import './index.css'
-import App from './app/App.tsx'
-import {BrowserRouter} from "react-router-dom";
+// Полностью замени содержимое файла: src/main.tsx
 
-createRoot(document.getElementById('root')!).render(
-    <StrictMode>
+import React, { Suspense } from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './app/App.tsx';
+import './index.css';
+
+import './i18n.ts';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
         <BrowserRouter>
-            <App/>
+            <Suspense fallback="Loading...">
+                <App />
+            </Suspense>
         </BrowserRouter>
-    </StrictMode>,
-)
+    </React.StrictMode>
+);
