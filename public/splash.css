@@ -8,7 +8,7 @@ html, body {
     overflow: hidden;
 
     /* Используем переменную от Telegram для фона. Запасной цвет - фиолетовый. */
-    background-color: var(--tg-theme-bg-color, #1a0f3d);
+    background-color: var(--tg-theme-bg-color, #bfa75e);
 }
 
 /* Скрываем React-приложение, пока сплэш-скрин не скрыт */
