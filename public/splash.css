@@ -1,12 +1,19 @@
-/* Файл: public/splash.css */
+/* Полностью замените содержимое файла: public/splash.css */
 
-/* Сбрасываем стили для body, чтобы фон был на весь экран */
 html, body {
     margin: 0;
     padding: 0;
     height: 100%;
     width: 100%;
-    overflow: hidden; /* Запрещаем прокрутку пока виден сплэш */
+    overflow: hidden;
+
+    /* Используем переменную от Telegram для фона. Запасной цвет - фиолетовый. */
+    background-color: var(--tg-theme-bg-color, #1a0f3d);
+}
+
+/* Скрываем React-приложение, пока сплэш-скрин не скрыт */
+body:has(#splash-screen:not(.hidden)) #root {
+    display: none;
 }
 
 #splash-screen {
@@ -15,64 +22,48 @@ html, body {
     left: 0;
     width: 100%;
     height: 100%;
-
-    /* Задайте фон как на примере */
-    background-color: #1a0f3d; /* Пример темного фиолетового фона */
-
+    /* Фон сплэш-скрина также берем из переменных Telegram */
+    background-color: var(--tg-theme-bg-color, #1a0f3d);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
-    /* z-index чтобы быть поверх всего */
     z-index: 9999;
-
-    /* Анимация для плавного исчезновения */
     opacity: 1;
     transition: opacity 0.5s ease-out;
 }
 
-/* Класс для скрытия сплэш-скрина */
 #splash-screen.hidden {
     opacity: 0;
-    /* Запрещаем взаимодействие с элементом после скрытия */
     pointer-events: none;
 }
 
 .splash-logo {
-    width: 150px; /* Подберите размер вашего лого */
+    width: 150px;
     height: auto;
     margin-bottom: 20px;
+    animation: pulse 2.5s infinite ease-in-out;
 }
 
 .splash-title {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size: 28px;
     font-weight: bold;
-    color: #ffffff;
+    /* Цвет текста тоже берем из переменных Telegram */
+    color: var(--tg-theme-text-color, #ffffff);
     margin: 0 0 10px 0;
 }
 
 .splash-text {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.7);
+    /* Для второстепенного текста используем hint_color */
+    color: var(--tg-theme-hint-color, #999999);
     margin: 0;
 }
 
-/* Анимация для логотипа, если хотите добавить "дыхание" */
-.splash-logo {
-    animation: pulse 2.5s infinite ease-in-out;
-}
-
 @keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }

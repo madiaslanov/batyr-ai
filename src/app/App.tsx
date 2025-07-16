@@ -32,33 +32,23 @@ function App() {
 
             // --- ОСНОВНЫЕ ДЕЙСТВИЯ ---
 
-            // 1. Блокируем ориентацию экрана
+            // 1. Блокируем ориентацию экрана (будет работать там, где поддерживается)
             try {
                 if (screen.orientation && typeof screen.orientation.lock === 'function') {
-                    screen.orientation.lock('portrait-primary').catch(err => {
-                        console.warn("Блокировка ориентации не удалась:", err.message);
-                    });
+                    screen.orientation.lock('portrait-primary').catch(() => {});
                 }
-            } catch (error) {
-                console.error("Ошибка при блокировке ориентации:", error);
-            }
+            } catch (error) {}
 
-            // 2. Запрашиваем настоящий полноэкранный режим
-            if (tg.isVersionAtLeast('7.0') && tg.isExpanded) {
-                tg.requestFullscreen?.(); // Используем опциональный вызов, так как метод может отсутствовать
-            } else {
-                tg.expand(); // Для старых версий или если fullscreen не доступен
-            }
+            // 2. Разворачиваем приложение.
+            tg.expand();
 
-            // 3. Настраиваем цвета, чтобы скрыть шапку, если fullscreen не сработал
-            const mainColor = '#1a0f3d';
-            tg.setHeaderColor(mainColor);
-            tg.setBackgroundColor(mainColor);
+            // 3. Убираем ручную установку цветов. Приложение будет использовать CSS-переменные от Telegram.
 
             // 4. Остальные настройки
             tg.enableClosingConfirmation();
             tg.BackButton.onClick(() => navigate(-1));
 
+            // Обработка deep-link
             if (tg.initDataUnsafe?.start_param) {
                 const startParam = tg.initDataUnsafe.start_param;
                 if (startParam === 'generatePhoto') navigate('/generatePhoto', { replace: true });
@@ -100,7 +90,7 @@ function App() {
         const splash = document.getElementById('splash-screen');
         if (splash) splash.remove();
         return (
-            <div style={{ background: '#1a0f3d', color: 'white', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+            <div style={{ background: 'var(--tg-theme-bg-color, #1a0f3d)', color: 'var(--tg-theme-text-color, #ffffff)', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                 <div>
                     <h2>{t('mobileOnly')}</h2>
                     <p>{t('openOnPhone')}</p>
