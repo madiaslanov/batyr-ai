@@ -6,7 +6,6 @@ import { LanguageSelector } from "../../../features/languageSelector/LanguageSel
 import { ThemeSelector } from "../../../service/themeSelector/themeSelector.tsx";
 
 
-// --- Интерфейсы оставляем без изменений ---
 interface Package {
     id: string;
     price: string;
