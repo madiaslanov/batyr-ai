@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './ThemeSelector.module.css'; // Будем использовать новые стили
 
-// Наши темы. key - для путей к файлам, name - для отображения в UI
 const themeOptions = [
     { key: 'kz', name: 'Батыр' },
     { key: 'ru', name: 'Богатырь' },

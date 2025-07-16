@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "../../../features/languageSelector/LanguageSelector.tsx";
 import {ThemeSelector} from "../../../features/ThemeSelector/ThemeSelector.tsx";
-// ✅ 1. Импортируем наш новый компонент для смены темы
+
 
 // --- Интерфейсы оставляем без изменений ---
 interface Package {
