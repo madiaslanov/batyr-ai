@@ -1,4 +1,5 @@
 // Полностью замените содержимое файла: src/layouts/Layout.tsx
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,37 +21,8 @@ export default function Layout() {
     const swiperRef = useRef<SwiperCore | null>(null);
     const isNavigatingByClick = useRef(false);
 
-    // --- НАЧАЛО ИЗМЕНЕНИЙ ---
-    useEffect(() => {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            // 1. Говорим Telegram, что приложение готово
-            tg.ready();
-            // 2. Просим Telegram развернуть приложение на весь экран
-            tg.expand();
-            // 3. Настраиваем цвет кнопки "Назад" под стиль приложения
-            tg.BackButton.show();
-            tg.onEvent('backButtonClicked', () => navigate(-1)); // Пример, можно настроить сложнее
-        }
-
-        // 4. Логика для скрытия Splash Screen
-        const splash = document.getElementById('splash-screen');
-        const root = document.getElementById('root');
-
-        if (splash && root) {
-            // Показываем основной контейнер приложения
-            root.style.display = 'flex'; // Используем flex, т.к. у .appContainer он есть
-
-            // Плавно скрываем splash screen
-            splash.classList.add('hidden');
-
-            // Через 600мс (длительность анимации + запас) удаляем его из DOM, чтобы не мешал
-            setTimeout(() => {
-                splash.remove();
-            }, 600);
-        }
-    }, [navigate]);
-    // --- КОНЕЦ ИЗМЕНЕНИЙ ---
+    // Логика Telegram и сплэш-скрина отсюда УБРАНА.
+    // Она теперь централизована в App.tsx.
 
     useEffect(() => {
         if (swiperRef.current && swiperRef.current.activeIndex !== activeIndex && activeIndex > -1) {
@@ -77,7 +49,8 @@ export default function Layout() {
         i18n.changeLanguage(lang);
     };
 
-    if (activeIndex === -1) return null;
+    // Убрали проверку `activeIndex === -1`, так как роутинг теперь корректно обрабатывается в App.tsx
+    // и Layout рендерится только для нужных путей.
 
     return (
         <div className={style.appContainer}>
@@ -90,7 +63,7 @@ export default function Layout() {
             <div className={style.mainContent}>
                 <Swiper
                     onSwiper={(swiper) => { swiperRef.current = swiper; }}
-                    initialSlide={activeIndex}
+                    initialSlide={activeIndex > -1 ? activeIndex : 0} // Защита от неправильного индекса
                     onSlideChange={handleSlideChange}
                     style={{ height: '100%', width: '100%' }}
                     resistanceRatio={0}
