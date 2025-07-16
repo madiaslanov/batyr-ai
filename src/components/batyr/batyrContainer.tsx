@@ -1,4 +1,5 @@
-import { useRef, useCallback, useState, useEffect } from 'react'; // Добавили useState и useEffect
+
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { Batyr } from "./ui/batyr";
 import { useSpeech } from "../../service/reactHooks/useSpeech.ts";
 
@@ -17,12 +18,10 @@ export const BatyrContainer = () => {
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-    // --- НОВАЯ ЛОГИКА И СОСТОЯНИЯ ---
     const [credits, setCredits] = useState<number | null>(null);
     const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
     const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 
-    // Функция для получения баланса с бэкенда
     const fetchUserStatus = useCallback(async () => {
         if (!window.Telegram?.WebApp?.initData) return;
         try {
@@ -34,11 +33,12 @@ export const BatyrContainer = () => {
             setCredits(data.credits);
         } catch (error) {
             console.error("Ошибка при получении статуса пользователя:", error);
-            window.Telegram.WebApp.showAlert("Не удалось загрузить ваш баланс.");
+            if (credits !== null) {
+                window.Telegram.WebApp.showAlert("Не удалось загрузить ваш баланс.");
+            }
         }
-    }, []);
+    }, [credits]);
 
-    // Загружаем баланс пользователя при первом рендере
     useEffect(() => {
         fetchUserStatus();
     }, [fetchUserStatus]);
@@ -62,11 +62,17 @@ export const BatyrContainer = () => {
             const data = await response.json();
             window.Telegram.WebApp.openInvoice(data.invoice_link, (status: string) => {
                 if (status === 'paid') {
-                    window.Telegram.WebApp.showAlert("Оплата прошла успешно! Ваш баланс обновлен.");
+                    window.Telegram.WebApp.showPopup({
+                        title: 'Успех!',
+                        message: 'Оплата прошла успешно! Ваш баланс обновлен.',
+                        buttons: [{ type: 'ok' }]
+                    });
                     setPaymentModalOpen(false);
-                    fetchUserStatus(); // Обновляем баланс после успешной оплаты
+                    fetchUserStatus();
+                } else if (status === 'cancelled') {
+
                 } else {
-                    window.Telegram.WebApp.showAlert("Оплата не удалась или была отменена.");
+                    window.Telegram.WebApp.showAlert("Оплата не удалась.");
                 }
             });
         } catch (error: any) {
@@ -75,7 +81,6 @@ export const BatyrContainer = () => {
             setIsLoadingPayment(false);
         }
     };
-    // --- КОНЕЦ НОВОЙ ЛОГИКИ ---
 
     const handleNewAnswer = useCallback((audioUrl: string) => {
         if (audioPlayerRef.current) audioPlayerRef.current.pause();
@@ -86,7 +91,7 @@ export const BatyrContainer = () => {
     }, []);
 
     const handleError = useCallback((message: string) => {
-        alert(message);
+        window.Telegram.WebApp.showAlert(message);
     }, []);
 
     const {
@@ -99,28 +104,13 @@ export const BatyrContainer = () => {
         onError: handleError,
     });
 
-    // --- НОВАЯ ФУНКЦИЯ-ПРОВЕРКА ---
-    // Эта функция будет вызываться при клике на батыра.
-    // Она проверяет баланс перед тем, как запустить запись голоса.
-    const handleToggleRecordingWithCheck = () => {
-        if (credits !== null && credits > 0) {
-            toggleRecording(); // Если кредиты есть - запускаем запись
-            setCredits(prev => (prev !== null ? prev - 1 : 0)); // Оптимистичное обновление UI
-        } else {
-            // Если кредитов нет - показываем окно оплаты
-            window.Telegram.WebApp.showAlert("У вас закончились кредиты. Пожалуйста, пополните баланс.");
-            setPaymentModalOpen(true);
-        }
-    };
-
     return (
         <Batyr
             tgUser={tgUser}
             isRecording={isRecording}
             isProcessing={isProcessing}
             isHistoryEmpty={history.length === 0}
-            // Передаем новую функцию-проверку вместо старой
-            onToggleRecording={handleToggleRecordingWithCheck}
+            onToggleRecording={toggleRecording}
             credits={credits}
             isPaymentModalOpen={isPaymentModalOpen}
             isLoadingPayment={isLoadingPayment}
