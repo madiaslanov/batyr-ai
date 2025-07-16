@@ -115,11 +115,6 @@ const Photo = ({
                                 </button>
                             </>
                         )}
-                        {loading && (
-                            <button className={styles.button} onClick={onClear}>
-                                {t('cancel')}
-                            </button>
-                        )}
                     </div>
                 </>
             )}
