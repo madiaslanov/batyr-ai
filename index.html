@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>BatyrAi</title>
+
+  <title>BatyrAI</title>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2J5SZSQH87"></script>
   <script>
@@ -19,10 +22,21 @@
     gtag('js', new Date());
     gtag('config', 'G-2J5SZSQH87');
   </script>
+  <link rel="stylesheet" href="/splash.css">
 
 </head>
 <body>
-<div id="root"></div>
+
+<div id="splash-screen">
+  <!-- Убедитесь, что файл /splash-logo.png существует в папке /public -->
+  <img src="/splash-logo.jpg" alt="BatyrAI Logo" class="splash-logo" />
+  <h1 class="splash-title">BatyrAI</h1>
+  <p class="splash-text">Загрузка ...</p>
+</div>
+
+<div id="root" style="display: none;"></div>
+
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script type="module" src="/src/main.tsx"></script>
 </body>
