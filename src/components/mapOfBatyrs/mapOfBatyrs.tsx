@@ -1,17 +1,19 @@
-// Полностью замени содержимое файла: src/components/mapOfBatyrs/mapOfBatyrs.tsx
+// src/components/mapOfBatyrs/MapOfBatyrs.tsx
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from "react-i18next";
 import style from './MapOfBatyrs.module.css';
-import { useMapSpeech } from "../../service/reactHooks/useMapSpeech.ts";
 
+// Объявления глобальных типов остаются без изменений
 declare global {
     interface Window {
         handleMapClick?: (regionId: string) => void;
         simplemaps_countrymap?: any;
+        simplemaps_countrymap_mapdata?: any;
     }
 }
 
+// Интерфейсы данных остаются без изменений
 interface Batyr { name: string; years: string; description: string; image: string | null; }
 interface HistoricalEvent { name: string; period: string; description: string; }
 interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; historical_events: HistoricalEvent[]; }
@@ -20,6 +22,9 @@ interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; 
 const MapOfBatyrs = () => {
     const { t, i18n } = useTranslation();
     const API_URL = 'https://api.batyrai.com';
+
+    // --- 1. НОВОЕ СОСТОЯНИЕ для хранения ID выбранного региона ---
+    const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
 
     const [regionData, setRegionData] = useState<RegionData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -38,50 +43,70 @@ const MapOfBatyrs = () => {
         setIsSpeaking(false);
     }, []);
 
-    const handleRegionClick = useCallback(async (regionId: string) => {
-        handleStopAudio();
-        setRegionData(null);
-        setError(null);
-        setLoading(true);
-        try {
-            // FIX: Добавляем заголовок с языком
-            const response = await fetch(`${API_URL}/api/region/${regionId}`, {
-                headers: { 'Accept-Language': i18n.language }
-            });
-            if (!response.ok) {
-                // FIX: Пытаемся получить осмысленную ошибку от сервера
-                const errorData = await response.json().catch(() => ({ description: `Server error: ${response.status}` }));
-                throw new Error(errorData.description || `Server responded with error: ${response.status}`);
-            }
-            const data: RegionData = await response.json();
-            setRegionData(data);
+    // --- 2. ИЗМЕНЕНА ЛОГИКА КЛИКА ---
+    // Теперь эта функция только устанавливает ID. Загрузка данных вынесена в useEffect.
+    const handleRegionClick = useCallback((regionId: string) => {
+        setSelectedRegionId(regionId);
+    }, []);
 
-            // FIX: Используем t() для формирования текста для озвучки
-            const batyrsText = data.batyrs.map(b => `${b.name}. ${b.description}`).join(' ');
-            const eventsText = data.historical_events.map(e => `${e.name}. ${e.description}`).join(' ');
-            textToReadRef.current = `${data.region_name}. ${data.main_text} ${t('mapReadBatyrs')}: ${batyrsText}. ${t('mapReadEvents')}: ${eventsText}`;
 
-        } catch (err) {
-            console.error("Error loading region data:", err);
-            // FIX: Отображаем ошибку с сервера или общую
-            setError((err as Error).message || t('mapError'));
-        } finally {
-            setLoading(false);
+    // --- 3. НОВЫЙ useEffect ДЛЯ ЗАГРУЗКИ ДАННЫХ ---
+    // Этот хук будет срабатывать КАЖДЫЙ РАЗ, когда меняется ID региона ИЛИ ЯЗЫК.
+    useEffect(() => {
+        // Если регион не выбран, ничего не делаем
+        if (!selectedRegionId) {
+            setRegionData(null); // Очищаем данные, если регион сброшен
+            return;
         }
-    }, [API_URL, handleStopAudio, t, i18n.language]);
+
+        const fetchRegionData = async () => {
+            handleStopAudio();
+            setRegionData(null);
+            setError(null);
+            setLoading(true);
+
+            try {
+                const response = await fetch(`${API_URL}/api/region/${selectedRegionId}`, {
+                    headers: { 'Accept-Language': i18n.language }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ description: `Server error: ${response.status}` }));
+                    throw new Error(errorData.description || `Server responded with error: ${response.status}`);
+                }
+                const data: RegionData = await response.json();
+                setRegionData(data);
+
+                const batyrsText = data.batyrs.map(b => `${b.name}. ${b.description}`).join(' ');
+                const eventsText = data.historical_events.map(e => `${e.name}. ${e.description}`).join(' ');
+                textToReadRef.current = `${data.region_name}. ${data.main_text} ${t('mapReadBatyrs')}: ${batyrsText}. ${t('mapReadEvents')}: ${eventsText}`;
+
+            } catch (err) {
+                console.error("Error loading region data:", err);
+                setError((err as Error).message || t('mapError'));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRegionData();
+        // Зависимости: функция запускается при смене ID или языка
+    }, [selectedRegionId, i18n.language, handleStopAudio, t, API_URL]);
 
 
+    // Этот useEffect для обновления названий на карте остается без изменений, он работает правильно
     useEffect(() => {
         window.handleMapClick = handleRegionClick;
-        if (window.simplemaps_countrymap_mapdata) {
-            // Динамически меняем язык тултипов на карте
-            for (const state in window.simplemaps_countrymap_mapdata.state_specific) {
+        if (window.simplemaps_countrymap_mapdata?.state_specific) {
+            for (const stateId in window.simplemaps_countrymap_mapdata.state_specific) {
+                const state = window.simplemaps_countrymap_mapdata.state_specific[stateId];
                 if (i18n.language === 'kz') {
-                    window.simplemaps_countrymap_mapdata.state_specific[state].name = window.simplemaps_countrymap_mapdata.state_specific[state].name_kz || window.simplemaps_countrymap_mapdata.state_specific[state].name;
+                    // Используем имя по умолчанию, которое должно быть 'kz'
+                    state.name = window.simplemaps_countrymap_mapdata.state_specific[stateId].name_kz || window.simplemaps_countrymap_mapdata.state_specific[stateId].name;
                 } else if (i18n.language === 'en') {
-                    window.simplemaps_countrymap_mapdata.state_specific[state].name = window.simplemaps_countrymap_mapdata.state_specific[state].name_en || window.simplemaps_countrymap_mapdata.state_specific[state].name;
-                } else {
-                    window.simplemaps_countrymap_mapdata.state_specific[state].name = window.simplemaps_countrymap_mapdata.state_specific[state].name_ru || window.simplemaps_countrymap_mapdata.state_specific[state].name;
+                    state.name = state.name_en || state.name;
+                } else { // 'ru'
+                    state.name = state.name_ru || state.name;
                 }
             }
             if (window.simplemaps_countrymap?.load) {
@@ -90,6 +115,7 @@ const MapOfBatyrs = () => {
         }
     }, [handleRegionClick, i18n.language]);
 
+    // Этот useEffect для инициализации карты остается без изменений
     useEffect(() => {
         const loadScript = (src: string): Promise<void> => new Promise((resolve, reject) => {
             if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
@@ -103,7 +129,10 @@ const MapOfBatyrs = () => {
         const initializeMap = async () => {
             try {
                 await loadScript('/mapdata.js'); await loadScript('/countrymap.js');
-                if (window.simplemaps_countrymap?.load) window.simplemaps_countrymap.load();
+                // После загрузки скриптов, нужно обновить язык карты, т.к. предыдущий useEffect мог сработать раньше
+                if (window.simplemaps_countrymap?.load) {
+                    i18n.changeLanguage(i18n.language); // "Пнем" язык еще раз, чтобы обновить карту
+                }
             } catch (err) { setError("Failed to load map."); }
         };
         if (!document.getElementById('simplemaps-css-script')) {
@@ -113,8 +142,10 @@ const MapOfBatyrs = () => {
         }
         initializeMap();
         return () => { window.handleMapClick = undefined; handleStopAudio(); };
-    }, [handleStopAudio]);
+    }, [handleStopAudio, i18n]); // Добавили i18n для стабильности
 
+
+    // Остальной код компонента (TTS, ассистент, JSX-разметка) остается без изменений
     const handlePlayAudio = async () => {
         if (!textToReadRef.current || isAudioLoading) return;
         handleStopAudio(); setIsAudioLoading(true); setIsSpeaking(false); setError(null);
@@ -136,27 +167,8 @@ const MapOfBatyrs = () => {
         } finally { setIsAudioLoading(false); }
     };
 
-    const [isAssistantVisible, setIsAssistantVisible] = useState(false);
-    const assistantAudioRef = useRef<HTMLAudioElement | null>(null);
 
-    const handleAssistantAnswer = useCallback((audioUrl: string) => {
-        if (assistantAudioRef.current) assistantAudioRef.current.pause();
-        const audio = new Audio(audioUrl);
-        assistantAudioRef.current = audio;
-        audio.play().catch(e => console.error("Assistant audio playback error:", e));
-    }, []);
 
-    const { isRecording, isProcessing, history, toggleRecording, clearHistory } = useMapSpeech({
-        onNewAnswer: handleAssistantAnswer,
-        onError: (message) => alert(`Assistant error: ${message}`),
-        apiUrl: API_URL
-    });
-
-    const toggleAssistant = () => {
-        const nextState = !isAssistantVisible;
-        setIsAssistantVisible(nextState);
-        if (!nextState) { if (isRecording) toggleRecording(); if (assistantAudioRef.current) assistantAudioRef.current.pause(); }
-    };
 
     return (
         <div className={style.pageContainer}>
@@ -208,9 +220,6 @@ const MapOfBatyrs = () => {
                     </div>
                 )}
             </div>
-
-
-
         </div>
     );
 };

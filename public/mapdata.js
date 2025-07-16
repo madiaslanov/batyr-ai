@@ -4,7 +4,6 @@ var simplemaps_countrymap_mapdata={
     background_color: "#FFFFFF",
     background_transparent: "yes",
     border_color: "#ffffff",
-
     state_description: "State description",
     state_color: "#1e5b8f",
     state_hover_color: "#3B729F",
@@ -12,7 +11,6 @@ var simplemaps_countrymap_mapdata={
     border_size: 1.5,
     all_states_inactive: "no",
     all_states_zoomable: "yes",
-
     location_description: "Location description",
     location_url: "",
     location_color: "#FF0067",
@@ -26,7 +24,6 @@ var simplemaps_countrymap_mapdata={
     location_hover_border: 2.5,
     all_locations_inactive: "no",
     all_locations_hidden: "no",
-
     label_color: "#ffffff",
     label_hover_color: "#ffffff",
     label_size: 30,
@@ -35,7 +32,6 @@ var simplemaps_countrymap_mapdata={
     label_scale: "no",
     hide_labels: "no",
     hide_eastern_labels: "no",
-
     zoom: "yes",
     manual_zoom: "yes",
     back_image: "no",
@@ -47,14 +43,12 @@ var simplemaps_countrymap_mapdata={
     zoom_out_incrementally: "yes",
     zoom_percentage: 0.99,
     zoom_time: 0.5,
-
     popup_color: "white",
     popup_opacity: 0.9,
     popup_shadow: 1,
     popup_corners: 5,
     popup_font: "12px/1.5 Verdana, Arial, Helvetica, sans-serif",
     popup_nocss: "no",
-
     div: "map",
     auto_load: "yes",
     url_new_tab: "no",
@@ -69,208 +63,147 @@ var simplemaps_countrymap_mapdata={
   state_specific: {
     KZ10: {
       name: "Абай облысы",
+      name_ru: "Абайская область",
+      name_en: "Abai Region",
       color: "#A1887F",
-      description: "Абай облысы — ұлы ақын Абайдың мекені, рухани мұра орталығы.",
       url: "javascript:handleMapClick('KZ10')"
     },
     KZ11: {
       name: "Ақмола облысы",
+      name_ru: "Акмолинская область",
+      name_en: "Akmola Region",
       color: "#90CAF9",
-      description: "Ақмола облысы — еліміздің жүрегі, дала мен тарихтың түйіскен жері.",
       url: "javascript:handleMapClick('KZ11')"
     },
     KZ15: {
       name: "Ақтөбе",
+      name_ru: "Актобе",
+      name_en: "Aktobe",
       color: "#6D4C41",
-      description: "Ақтөбе — батыс қақпасы, батырлар мен кен орындарының өлкесі.",
       url: "javascript:handleMapClick('KZ15')"
     },
     KZ19: {
       name: "Алматы облысы",
+      name_ru: "Алматинская область",
+      name_en: "Almaty Region",
       color: "#66BB6A",
-      description: "Алматы облысы — таулар мен табиғаттың тамаша үйлесімі.",
       url: "javascript:handleMapClick('KZ19')"
     },
     KZ23: {
       name: "Атырау",
+      name_ru: "Атырау",
+      name_en: "Atyrau",
       color: "#00897B",
-      description: "Атырау — Каспий жағасындағы мұнайлы өңір, балықшылар мекені.",
       url: "javascript:handleMapClick('KZ23')"
     },
     KZ27: {
       name: "Орал",
+      name_ru: "Уральск",
+      name_en: "Oral",
       color: "#558B2F",
-      description: "Орал — Еуропа мен Азия түйіскен ежелгі шаһар.",
       url: "javascript:handleMapClick('KZ27')"
     },
     KZ31: {
       name: "Жамбыл облысы",
+      name_ru: "Жамбылская область",
+      name_en: "Jambyl Region",
       color: "#D84315",
-      description: "Жамбыл облысы — көне Тараз, мыңжылдықтар елі.",
       url: "javascript:handleMapClick('KZ31')"
     },
     KZ33: {
       name: "Жетісу облысы",
+      name_ru: "Жетысуская область",
+      name_en: "Jetisu Region",
       color: "#4DB6AC",
-      description: "Жетісу облысы — жеті өзеннің өлкесі, мал шаруашылығы мен табиғат байлығы.",
       url: "javascript:handleMapClick('KZ33')"
     },
     KZ35: {
       name: "Қарағанды",
+      name_ru: "Караганда",
+      name_en: "Karagandy",
       color: "#424242",
-      description: "Қарағанды — көмірлі өлке, еңбек ерлерінің жері.",
       url: "javascript:handleMapClick('KZ35')"
     },
     KZ39: {
       name: "Қостанай",
+      name_ru: "Костанай",
+      name_en: "Kostanay",
       color: "#8D6E63",
-      description: "Қостанай — астықты аймақ, даланың алтыны.",
       url: "javascript:handleMapClick('KZ39')"
     },
     KZ43: {
       name: "Қызылорда",
+      name_ru: "Кызылорда",
+      name_en: "Kyzylorda",
       color: "#E53935",
-      description: "Қызылорда — Сыр елінің кіндігі, бай тарих пен мәдениет ошағы.",
       url: "javascript:handleMapClick('KZ43')"
     },
     KZ47: {
       name: "Ақтау",
+      name_ru: "Актау",
+      name_en: "Aktau",
       color: "#F57C00",
-      description: "Ақтау — Каспий жағасындағы қала, мұнай мен тастың мекені.",
       url: "javascript:handleMapClick('KZ47')"
     },
     KZ55: {
       name: "Павлодар",
+      name_ru: "Павлодар",
+      name_en: "Pavlodar",
       color: "#039BE5",
-      description: "Павлодар — Ертіс бойындағы өндірісті аймақ.",
       url: "javascript:handleMapClick('KZ55')"
     },
     KZ59: {
       name: "Петропавл",
+      name_ru: "Петропавловск",
+      name_en: "Petropavl",
       color: "#5C6BC0",
-      description: "Петропавл — солтүстіктегі тыныш, тарихи қала.",
       url: "javascript:handleMapClick('KZ59')"
     },
     KZ61: {
       name: "Түркістан",
+      name_ru: "Туркестан",
+      name_en: "Turkistan",
       color: "#8E24AA",
-      description: "Түркістан — түркі әлемінің рухани астанасы.",
       url: "javascript:handleMapClick('KZ61')"
     },
     KZ62: {
       name: "Ұлытау облысы",
+      name_ru: "Улытауская область",
+      name_en: "Ulytau Region",
       color: "#A1887F",
-      description: "Ұлытау облысы — қазақ тарихының алтын бесігі.",
       url: "javascript:handleMapClick('KZ62')"
     },
     KZ63: {
       name: "Өскемен",
+      name_ru: "Усть-Каменогорск",
+      name_en: "Oskemen",
       color: "#E53935",
-      description: "Өскемен — Алтай етегіндегі өндірісті және орманды өлке.",
       url: "javascript:handleMapClick('KZ63')"
     },
     KZ71: {
       name: "Астана",
+      name_ru: "Астана",
+      name_en: "Astana",
       color: "#1E88E5",
-      description: "Астана — заманауи елорда, болашақтың қаласы.",
       url: "javascript:handleMapClick('KZ71')"
     },
     KZ75: {
       name: "Алматы",
+      name_ru: "Алматы",
+      name_en: "Almaty",
       color: "#43A047",
-      description: "Алматы — мәдениет пен табиғаттың орталығы, бұрынғы астана.",
       url: "javascript:handleMapClick('KZ75')"
     },
     KZ79: {
       name: "Шымкент",
+      name_ru: "Шымкент",
+      name_en: "Shymkent",
       color: "#FBC02D",
-      description: "Шымкент — күншуақты оңтүстік, сауда мен мәдениеттің қайнаған ошағы.",
       url: "javascript:handleMapClick('KZ79')"
     }
   },
   locations: {},
-  labels: {
-    KZ10: {
-      name: "Абай обл",
-      parent_id: "KZ10"
-    },
-    KZ11: {
-      name: "Ақмола обл",
-      parent_id: "KZ11"
-    },
-    KZ15: {
-      name: "Ақтөбе",
-      parent_id: "KZ15"
-    },
-    KZ19: {
-      name: "Алматы обл",
-      parent_id: "KZ19"
-    },
-    KZ23: {
-      name: "Атырау",
-      parent_id: "KZ23"
-    },
-    KZ27: {
-      name: "Орал",
-      parent_id: "KZ27"
-    },
-    KZ31: {
-      name: "Жамбыл",
-      parent_id: "KZ31"
-    },
-    KZ33: {
-      name: "Жетісу",
-      parent_id: "KZ33"
-    },
-    KZ35: {
-      name: "Қарағанды",
-      parent_id: "KZ35"
-    },
-    KZ39: {
-      name: "Қостанай",
-      parent_id: "KZ39"
-    },
-    KZ43: {
-      name: "Қызылорда",
-      parent_id: "KZ43"
-    },
-    KZ47: {
-      name: "Ақтау",
-      parent_id: "KZ47"
-    },
-    KZ55: {
-      name: "Павлодар",
-      parent_id: "KZ55"
-    },
-    KZ59: {
-      name: "Петропавл",
-      parent_id: "KZ59"
-    },
-    KZ61: {
-      name: "Түркістан",
-      parent_id: "KZ61"
-    },
-    KZ62: {
-      name: "Ұлытау",
-      parent_id: "KZ62"
-    },
-    KZ63: {
-      name: "Өскемен",
-      parent_id: "KZ63"
-    },
-    KZ71: {
-      name: "Астана",
-      parent_id: "KZ71"
-    },
-    KZ75: {
-      name: "Алматы",
-      parent_id: "KZ75"
-    },
-    KZ79: {
-      name: "Шымкент",
-      parent_id: "KZ79"
-    }
-  },
+  labels: {},
   legend: {
     entries: []
   },
