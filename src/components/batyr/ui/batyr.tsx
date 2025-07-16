@@ -2,7 +2,7 @@ import style from "./batyr.module.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "../../../features/languageSelector/LanguageSelector.tsx";
-import {ThemeSelector} from "../../../features/themeSelector/ThemeSelector.tsx";
+import { ThemeSelector } from "../../../features/themeSelector/ThemeSelector.tsx";
 
 
 // --- Интерфейсы оставляем без изменений ---
