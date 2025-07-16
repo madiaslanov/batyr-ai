@@ -21,9 +21,19 @@ export default function Layout() {
     const swiperRef = useRef<SwiperCore | null>(null);
     const isNavigatingByClick = useRef(false);
 
-    // Логика Telegram и сплэш-скрина отсюда УБРАНА.
-    // Она теперь централизована в App.tsx.
+    // Логика для кнопки "Назад"
+    useEffect(() => {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            if (location.pathname !== '/') {
+                tg.BackButton.show();
+            } else {
+                tg.BackButton.hide();
+            }
+        }
+    }, [location.pathname]);
 
+    // Логика для Swiper
     useEffect(() => {
         if (swiperRef.current && swiperRef.current.activeIndex !== activeIndex && activeIndex > -1) {
             isNavigatingByClick.current = true;
@@ -49,9 +59,6 @@ export default function Layout() {
         i18n.changeLanguage(lang);
     };
 
-    // Убрали проверку `activeIndex === -1`, так как роутинг теперь корректно обрабатывается в App.tsx
-    // и Layout рендерится только для нужных путей.
-
     return (
         <div className={style.appContainer}>
             <div className={style.langSwitcher}>
@@ -59,11 +66,10 @@ export default function Layout() {
                 <button onClick={() => changeLanguage('ru')} className={i18n.language === 'ru' ? style.activeLang : ''}>RU</button>
                 <button onClick={() => changeLanguage('en')} className={i18n.language === 'en' ? style.activeLang : ''}>EN</button>
             </div>
-
             <div className={style.mainContent}>
                 <Swiper
                     onSwiper={(swiper) => { swiperRef.current = swiper; }}
-                    initialSlide={activeIndex > -1 ? activeIndex : 0} // Защита от неправильного индекса
+                    initialSlide={activeIndex > -1 ? activeIndex : 0}
                     onSlideChange={handleSlideChange}
                     style={{ height: '100%', width: '100%' }}
                     resistanceRatio={0}
@@ -73,26 +79,10 @@ export default function Layout() {
                     <SwiperSlide><MapOfBatyrs /></SwiperSlide>
                 </Swiper>
             </div>
-
             <nav>
-                <Link to="/generatePhoto">
-                    <div className={`${style.card} ${location.pathname === "/generatePhoto" ? style.active : ""}`}>
-                        <img src="/navBar_img/photo.png" alt="Photo" />
-                        <p>{t('navPhoto')}</p>
-                    </div>
-                </Link>
-                <Link to="/">
-                    <div className={`${style.card} ${location.pathname === "/" ? style.active : ""}`}>
-                        <img src="/navBar_img/batyr.png" alt="Batyr" />
-                        <p>{t('navBatyr')}</p>
-                    </div>
-                </Link>
-                <Link to="/mapOfBatyrs">
-                    <div className={`${style.card} ${location.pathname === "/mapOfBatyrs" ? style.active : ""}`}>
-                        <img src="/navBar_img/map2.png" alt="Map" />
-                        <p>{t('navMap')}</p>
-                    </div>
-                </Link>
+                <Link to="/generatePhoto"><div className={`${style.card} ${location.pathname === "/generatePhoto" ? style.active : ""}`}><img src="/navBar_img/photo.png" alt="Photo" /><p>{t('navPhoto')}</p></div></Link>
+                <Link to="/"><div className={`${style.card} ${location.pathname === "/" ? style.active : ""}`}><img src="/navBar_img/batyr.png" alt="Batyr" /><p>{t('navBatyr')}</p></div></Link>
+                <Link to="/mapOfBatyrs"><div className={`${style.card} ${location.pathname === "/mapOfBatyrs" ? style.active : ""}`}><img src="/navBar_img/map2.png" alt="Map" /><p>{t('navMap')}</p></div></Link>
             </nav>
         </div>
     );
