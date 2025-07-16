@@ -26,33 +26,46 @@ function App() {
     useEffect(() => {
         const tryInit = () => {
             const tg = window.Telegram?.WebApp;
-            if (!tg || !tg.isReady) {
-                return;
-            }
+            if (!tg || !tg.isReady) return;
+
             clearInterval(initInterval);
 
-            // --- КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ ЗДЕСЬ ---
+            // --- ОСНОВНЫЕ ДЕЙСТВИЯ ---
 
-            // 1. Устанавливаем цвет фона и цвет шапки ОДИНАКОВЫМИ
-            const mainColor = '#1a0f3d'; // Твой основной фиолетовый цвет
+            // 1. Блокируем ориентацию экрана
+            try {
+                if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                    screen.orientation.lock('portrait-primary').catch(err => {
+                        console.warn("Блокировка ориентации не удалась:", err.message);
+                    });
+                }
+            } catch (error) {
+                console.error("Ошибка при блокировке ориентации:", error);
+            }
+
+            // 2. Запрашиваем настоящий полноэкранный режим
+            if (tg.isVersionAtLeast('7.0') && tg.isExpanded) {
+                tg.requestFullscreen?.(); // Используем опциональный вызов, так как метод может отсутствовать
+            } else {
+                tg.expand(); // Для старых версий или если fullscreen не доступен
+            }
+
+            // 3. Настраиваем цвета, чтобы скрыть шапку, если fullscreen не сработал
+            const mainColor = '#1a0f3d';
             tg.setHeaderColor(mainColor);
             tg.setBackgroundColor(mainColor);
 
-            // 2. Разворачиваем приложение
-            tg.expand();
-
-            // 3. Остальные настройки
+            // 4. Остальные настройки
             tg.enableClosingConfirmation();
             tg.BackButton.onClick(() => navigate(-1));
 
-            // Обработка deep-link
             if (tg.initDataUnsafe?.start_param) {
                 const startParam = tg.initDataUnsafe.start_param;
                 if (startParam === 'generatePhoto') navigate('/generatePhoto', { replace: true });
                 else if (startParam === 'mapOfBatyrs') navigate('/mapOfBatyrs', { replace: true });
             }
 
-            // Убираем сплэш-скрин
+            // 5. Убираем сплэш-скрин
             const splash = document.getElementById('splash-screen');
             if (splash) {
                 splash.classList.add('hidden');
@@ -80,7 +93,7 @@ function App() {
         }
     }, [location.pathname]);
 
-    // --- Отображение компонентов ---
+    // Отображение компонентов
     if (isMobile === null) return null;
 
     if (!isMobile) {
