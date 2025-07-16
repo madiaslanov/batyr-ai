@@ -1,5 +1,3 @@
-// Полностью замени содержимое файла: src/components/batyr/batyrContainer.tsx
-
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { Batyr } from "./ui/batyr";
