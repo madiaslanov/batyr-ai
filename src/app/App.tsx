@@ -1,18 +1,28 @@
 // Полностью замените содержимое файла: src/App.tsx
 
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ReactGA from "react-ga4";
 import Layout from "../features/layout/layout.tsx";
 
 const TRACKING_ID = "G-2J5SZSQH87";
 
+// Объявляем глобальный тип для window.Telegram.WebApp, чтобы TypeScript не ругался
+declare global {
+    interface Window {
+        Telegram: {
+            WebApp: any;
+        };
+    }
+}
+
 function App() {
     const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
+    const isInitialized = useRef(false);
 
     // Аналитика и проверка на мобильное устройство
     useEffect(() => { ReactGA.initialize(TRACKING_ID); }, []);
@@ -26,27 +36,38 @@ function App() {
     useEffect(() => {
         const tryInit = () => {
             const tg = window.Telegram?.WebApp;
-            if (!tg || !tg.isReady) return;
+
+            if (!tg || !tg.ready || isInitialized.current) {
+                tg?.ready();
+                return;
+            }
 
             clearInterval(initInterval);
+            isInitialized.current = true;
 
             // --- ОСНОВНЫЕ ДЕЙСТВИЯ ---
 
-            // 1. Блокируем ориентацию экрана (будет работать там, где поддерживается)
+            // 1. Разворачиваем окно на максимальную высоту
+            tg.expand();
+
+            // 2. Блокируем ориентацию (сработает там, где поддерживается)
             try {
                 if (screen.orientation && typeof screen.orientation.lock === 'function') {
                     screen.orientation.lock('portrait-primary').catch(() => {});
                 }
-            } catch (error) {}
+            } catch (e) {}
 
-            // 2. Разворачиваем приложение.
-            tg.expand();
+            // 3. УБИРАЕМ РУЧНУЮ УСТАНОВКУ ЦВЕТОВ.
+            // Теперь приложение будет использовать цвета, которые предоставляет клиент Telegram.
+            // tg.setHeaderColor(...)
+            // tg.setBackgroundColor(...)
 
-            // 3. Убираем ручную установку цветов. Приложение будет использовать CSS-переменные от Telegram.
-
-            // 4. Остальные настройки
+            // 4. Прочие настройки
             tg.enableClosingConfirmation();
-            tg.BackButton.onClick(() => navigate(-1));
+
+            // 5. Настройка кнопки "Назад"
+            const handleBackClick = () => navigate(-1);
+            tg.onEvent('backButtonClicked', handleBackClick);
 
             // Обработка deep-link
             if (tg.initDataUnsafe?.start_param) {
@@ -55,26 +76,29 @@ function App() {
                 else if (startParam === 'mapOfBatyrs') navigate('/mapOfBatyrs', { replace: true });
             }
 
-            // 5. Убираем сплэш-скрин
+            // 6. Убираем сплэш-скрин
             const splash = document.getElementById('splash-screen');
             if (splash) {
                 splash.classList.add('hidden');
                 setTimeout(() => splash.remove(), 600);
             }
+
+            return () => {
+                tg.offEvent('backButtonClicked', handleBackClick);
+            };
         };
 
-        window.Telegram?.WebApp?.ready();
-        const initInterval = setInterval(tryInit, 100);
+        const initInterval = setInterval(tryInit, 50);
 
         return () => {
             clearInterval(initInterval);
         };
     }, [navigate]);
 
-    // Обновляем видимость кнопки "Назад"
+    // Управление видимостью кнопки "Назад"
     useEffect(() => {
         const tg = window.Telegram?.WebApp;
-        if (tg) {
+        if (tg && tg.isReady) { // Добавлена проверка isReady для надежности
             if (location.pathname !== '/') {
                 tg.BackButton.show();
             } else {
@@ -83,14 +107,16 @@ function App() {
         }
     }, [location.pathname]);
 
-    // Отображение компонентов
-    if (isMobile === null) return null;
+    // ----- Рендеринг -----
+    if (isMobile === null) {
+        return null;
+    }
 
     if (!isMobile) {
         const splash = document.getElementById('splash-screen');
         if (splash) splash.remove();
         return (
-            <div style={{ background: 'var(--tg-theme-bg-color, #1a0f3d)', color: 'var(--tg-theme-text-color, #ffffff)', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+            <div style={{ background: 'var(--tg-theme-secondary-bg-color, #18222d)', color: 'var(--tg-theme-text-color, #ffffff)', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                 <div>
                     <h2>{t('mobileOnly')}</h2>
                     <p>{t('openOnPhone')}</p>
