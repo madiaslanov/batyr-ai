@@ -7,10 +7,8 @@
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
   />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <title>BatyrAI</title>
+  <link rel="stylesheet" href="/splash.css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2J5SZSQH87"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -18,11 +16,9 @@
     gtag('js', new Date());
     gtag('config', 'G-2J5SZSQH87');
   </script>
-  <link rel="stylesheet" href="/splash.css">
 </head>
 <body>
 <div id="splash-screen">
-  <!-- Имя файла логотипа должно быть правильным -->
   <img src="/splash-logo.jpg" alt="BatyrAI Logo" class="splash-logo" />
   <h1 class="splash-title">BatyrAI</h1>
   <p class="splash-text">Загрузка ...</p>
@@ -37,21 +33,19 @@
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
 
-      // --- ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ---
       tg.ready();
       tg.expand();
       tg.enableClosingConfirmation();
-      tg.setBackgroundColor('#1a0f3d');
-      tg.setHeaderColor('#1a0f3d');
 
-      // --- КНОПКА НАЗАД ---
+      const brandColor = "#bfa75e";
+      tg.setBackgroundColor(brandColor);
+      tg.setHeaderColor(brandColor);
+
       tg.BackButton.hide();
       tg.BackButton.onClick(() => {
         window.history.go(-1);
       });
 
-      // --- ОБРАБОТКА DEEP LINK (start_param) ---
-      // Эта логика перенаправит пользователя на нужную страницу ДО того, как React отрендерит главную
       if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
         const startParam = tg.initDataUnsafe.start_param;
         if (startParam === 'generatePhoto') {
@@ -61,7 +55,6 @@
         }
       }
 
-      // --- УБИРАЕМ СПЛЭШ-СКРИН ---
       const splash = document.getElementById('splash-screen');
       const root = document.getElementById('root');
       if (splash && root) {
