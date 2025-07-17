@@ -3,15 +3,33 @@
 export default {
     main_settings: {
         width: "responsive",
+        background_color: "#FFFFFF",
         background_transparent: "yes",
         border_color: "#ffffff",
-        state_description: "County of the UK",
+        state_description: "County of the UK", // Изменено на английский
         state_color: "#88A4BC",
         state_hover_color: "#3B729F",
+        state_url: "",
         border_size: 1.5,
+        all_states_inactive: "no",
         all_states_zoomable: "yes",
+        location_description: "City",
+        location_url: "",
+        location_color: "#FF0067",
+        location_opacity: 0.8,
+        label_color: "#ffffff",
+        label_hover_color: "#d_ffffff",
+        label_size: 16,
+        label_font: "Arial",
+        label_display: "auto",
+        zoom: "yes",
+        manual_zoom: "yes",
+        initial_zoom: "-1",
         div: "map",
-        auto_load: "yes"
+        auto_load: "yes",
+        url_new_tab: "no",
+        popups: "detect",
+        link_text: "Learn More"
     },
     state_specific: {
         GBABD: { name: "Aberdeenshire", color: "#9C27B0", url: "javascript:handleMapClick('GBABD')" },

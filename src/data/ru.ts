@@ -114,7 +114,7 @@ export default {
         RUSA:  { name: "Республика Саха (Якутия)", color: "#E91E63", url: "javascript:handleMapClick('RUSA')" },
         RUSAK: { name: "Сахалинская область", color: "#AD1457", url: "javascript:handleMapClick('RUSAK')" },
         RUKHA: { name: "Хабаровский край", color: "#D81B60", url: "javascript:handleMapClick('RUKHA')" },
-        RUCHU: { name: "Чукотский АО", color: "#EC407A", url: "javascript:handleMapClick('RUCHU')" }
+        RUCHU: { name: "Чукотский АО", color: "rgba(236,64,122,0.85)", url: "javascript:handleMapClick('RUCHU')" }
     },
     locations: {
     },
