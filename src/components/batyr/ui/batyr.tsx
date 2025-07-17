@@ -1,17 +1,18 @@
-import style from "./batyr.module.css";
+// src/components/batyr/batyr.tsx
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "../../../features/languageSelector/LanguageSelector.tsx";
+import { ThemeSelector } from "../../../service/themeSelector/themeSelector.tsx"; // Изменили путь, если нужно
+import { useThemeStore } from "../../../store/themeStore.ts"; // 1. Импортируем наше глобальное хранилище
+import style from "./batyr.module.css";
 
-import { ThemeSelector } from "../../../service/themeSelector/themeSelector.tsx";
-
-
+// Интерфейсы остаются без изменений
 interface Package {
     id: string;
     price: string;
     count: number;
 }
-
 interface BatyrProps {
     tgUser?: { first_name: string; username?: string; photo_url?: string; };
     isRecording: boolean;
@@ -32,14 +33,14 @@ export const Batyr = ({
                           credits, isPaymentModalOpen, isLoadingPayment, onOpenPaymentModal,
                           onClosePaymentModal, onPurchase, packages,
                       }: BatyrProps) => {
-    // Хук для перевода текста остается без изменений
     const { t } = useTranslation();
     const [showHint, setShowHint] = useState(false);
 
-    // ✅ 2. Добавляем новое состояние для хранения выбранной темы. По умолчанию - 'kz'
-    const [selectedTheme, setSelectedTheme] = useState('kz');
+    // 2. Получаем текущую тему из глобального хранилища.
+    // Больше не нужно локальное состояние useState!
+    const selectedTheme = useThemeStore((state) => state.theme);
 
-    // ✅ 3. Генерируем пути к картинкам на основе состояния `selectedTheme`, а НЕ языка
+    // 3. Пути к картинкам генерируются на основе глобальной темы
     const batyrImagePath = `/homePage/${selectedTheme}-batyr.png`;
     const backgroundImagePath = `/homePage/${selectedTheme}-background.png`;
 
@@ -63,22 +64,17 @@ export const Batyr = ({
     return (
         <div
             className={style.batyrContent}
-            // Фон по-прежнему устанавливаем динамически, но теперь он зависит от `selectedTheme`
             style={{ backgroundImage: `url(${backgroundImagePath})` }}
         >
-            {/* ✅ 4. В .topBar теперь два компонента: для выбора языка и для выбора темы */}
             <div className={style.topBar}>
                 <LanguageSelector />
             </div>
+            {/* 4. ThemeSelector теперь сам управляет состоянием через хранилище */}
             <div className={style.topLeft}>
-                <ThemeSelector
-                    selectedTheme={selectedTheme}
-                    onSelectTheme={setSelectedTheme}
-                />
+                <ThemeSelector />
             </div>
 
-            {/* --- Весь остальной код компонента остается БЕЗ ИЗМЕНЕНИЙ --- */}
-
+            {/* --- Весь остальной JSX без изменений --- */}
             {isPaymentModalOpen && (
                 <div className={style.modalOverlay} onClick={onClosePaymentModal}>
                     <div className={style.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -126,7 +122,6 @@ export const Batyr = ({
                     <div className={`${style.statusIndicator} ${isRecording ? style.recording : ''} ${isProcessing ? style.processing : ''}`}>
                         {isProcessing ? '🤔' : (isRecording ? '⏹️' : '🎤')}
                     </div>
-                    {/* ✅ 5. Используем путь к модели, который теперь зависит от `selectedTheme` */}
                     <img src={batyrImagePath} alt="Selected character" />
                 </div>
             </div>
