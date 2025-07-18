@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from "react-i18next";
 import style from './MapOfBatyrs.module.css';
 
-// 1. Импортируем наше хранилище и данные карт
-import { useThemeStore } from '../../store/themeStore';
-import kzMapData from '../../data/kz.ts';
+// 1. УБИРАЕМ ИМПОРТ ГЛОБАЛЬНОГО ХРАНИЛИЩА
+// import { useThemeStore } from '../../store/themeStore';
+import kzMapData from '../../data/kz.ts'; // Убедитесь, что пути правильные
 import ruMapData from '../../data/ru.ts';
 import enMapData from '../../data/en.ts';
 
@@ -23,9 +23,14 @@ interface Batyr { name: string; years: string; description: string; image: strin
 interface HistoricalEvent { name: string; period: string; description: string; }
 interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; historical_events: HistoricalEvent[]; }
 
-const MapOfBatyrs = () => {
-    // Получаем тему и язык из глобальных хранилищ
-    const theme = useThemeStore((state) => state.theme);
+// 2. ДОБАВЛЯЕМ ИНТЕРФЕЙС ДЛЯ PROPS
+interface MapOfBatyrsProps {
+    theme: 'kz' | 'ru' | 'en';
+}
+
+// 3. КОМПОНЕНТ ТЕПЕРЬ ПРИНИМАЕТ PROPS
+const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
+    // 4. УБИРАЕМ ВЫЗОВ useThemeStore, ИСПОЛЬЗУЕМ THEME ИЗ PROPS
     const { t, i18n } = useTranslation();
     const API_URL = 'https://api.batyrai.com'; // Используйте ваш URL
 
@@ -39,7 +44,7 @@ const MapOfBatyrs = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [isAudioLoading, setIsAudioLoading] = useState<boolean>(false);
 
-    // Функции-обработчики
+    // Функции-обработчики (без изменений)
     const handleStopAudio = useCallback(() => {
         if (audioRef.current) {
             audioRef.current.pause();
@@ -84,7 +89,7 @@ const MapOfBatyrs = () => {
         }
     };
 
-    // 🔄 ИЗМЕНЕННЫЙ useEffect для загрузки данных региона
+    // useEffect для загрузки данных региона (логика не меняется, но зависимость от theme теперь корректна)
     useEffect(() => {
         if (!selectedRegionId) { setRegionData(null); return; }
         const fetchRegionData = async () => {
@@ -93,7 +98,6 @@ const MapOfBatyrs = () => {
             setError(null);
             setLoading(true);
             try {
-                // ДОБАВЛЕН ПАРАМЕТР ?theme=${theme}
                 const response = await fetch(`${API_URL}/api/region/${selectedRegionId}?theme=${theme}`, {
                     headers: { 'Accept-Language': i18n.language }
                 });
@@ -114,7 +118,6 @@ const MapOfBatyrs = () => {
             }
         };
         fetchRegionData();
-        // ДОБАВЛЕНА ЗАВИСИМОСТЬ `theme`, чтобы запрос выполнялся при смене карты
     }, [selectedRegionId, i18n.language, theme, handleStopAudio, t, API_URL]);
 
 
@@ -199,6 +202,7 @@ const MapOfBatyrs = () => {
     }, [i18n.language, theme]);
 
 
+    // JSX разметка (без изменений)
     return (
         <div className={style.pageContainer}>
             <div className={style.header}>
