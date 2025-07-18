@@ -5,10 +5,11 @@ import { useTranslation } from "react-i18next";
 import style from './MapOfBatyrs.module.css';
 
 // 1. Импортируем наше хранилище и данные карт
-import { useThemeStore } from '../../store/themeStore.ts'; // Убедитесь, что путь правильный
-import kzMapData from '../../data/kz.ts';             // Убедитесь, что путь правильный
-import ruMapData from '../../data/ru.ts';             // Убедитесь, что путь правильный
-import enMapData from '../../data/en.ts';             // Убедитесь, что путь правильный
+import { useThemeStore } from '../../store/themeStore';
+import kzMapData from '../../data/kz.ts';
+import ruMapData from '../../data/ru.ts';
+import enMapData from '../../data/en.ts';
+
 
 // Глобальные объявления и интерфейсы
 declare global {
@@ -26,7 +27,7 @@ const MapOfBatyrs = () => {
     // Получаем тему и язык из глобальных хранилищ
     const theme = useThemeStore((state) => state.theme);
     const { t, i18n } = useTranslation();
-    const API_URL = 'https://api.batyrai.com';
+    const API_URL = 'https://api.batyrai.com'; // Используйте ваш URL
 
     // Состояния компонента
     const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
@@ -64,7 +65,7 @@ const MapOfBatyrs = () => {
         try {
             const response = await fetch(`${API_URL}/api/tts`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept-Language': i18n.language },
                 body: JSON.stringify({ text: textToReadRef.current }),
             });
             if (!response.ok) throw new Error(t('ttsError'));
@@ -83,7 +84,7 @@ const MapOfBatyrs = () => {
         }
     };
 
-    // useEffect для загрузки данных региона
+    // 🔄 ИЗМЕНЕННЫЙ useEffect для загрузки данных региона
     useEffect(() => {
         if (!selectedRegionId) { setRegionData(null); return; }
         const fetchRegionData = async () => {
@@ -92,30 +93,39 @@ const MapOfBatyrs = () => {
             setError(null);
             setLoading(true);
             try {
-                const response = await fetch(`${API_URL}/api/region/${selectedRegionId}`, { headers: { 'Accept-Language': i18n.language } });
+                // ДОБАВЛЕН ПАРАМЕТР ?theme=${theme}
+                const response = await fetch(`${API_URL}/api/region/${selectedRegionId}?theme=${theme}`, {
+                    headers: { 'Accept-Language': i18n.language }
+                });
+
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ description: t('mapError') }));
-                    throw new Error(errorData.description);
+                    throw new Error(errorData.description || t('mapError'));
                 }
                 const data: RegionData = await response.json();
                 setRegionData(data);
-                const batyrsText = data.batyrs.map(b => `${b.name}. ${b.description}`).join(' ');
+                const heroesText = data.batyrs.map(b => `${b.name}. ${b.description}`).join(' ');
                 const eventsText = data.historical_events.map(e => `${e.name}. ${e.description}`).join(' ');
-                textToReadRef.current = `${data.region_name}. ${data.main_text} ${t('mapReadBatyrs')}: ${batyrsText}. ${t('mapReadEvents')}: ${eventsText}`;
-            } catch (err) { setError((err as Error).message);
-            } finally { setLoading(false); }
+                textToReadRef.current = `${data.region_name}. ${data.main_text} ${t('mapReadBatyrs')}: ${heroesText}. ${t('mapReadEvents')}: ${eventsText}`;
+            } catch (err) {
+                setError((err as Error).message);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchRegionData();
-    }, [selectedRegionId, i18n.language, handleStopAudio, t, API_URL]);
+        // ДОБАВЛЕНА ЗАВИСИМОСТЬ `theme`, чтобы запрос выполнялся при смене карты
+    }, [selectedRegionId, i18n.language, theme, handleStopAudio, t, API_URL]);
 
-    // **useEffect для смены ТЕМЫ карты**
+
+    // useEffect для смены ТЕМЫ карты (без изменений)
     useEffect(() => {
         const mapContainer = document.getElementById('map');
         if (!mapContainer) return;
 
         let isMounted = true;
         const cleanupPreviousMap = () => {
-            mapContainer.innerHTML = '';
+            if (mapContainer) mapContainer.innerHTML = '';
             document.querySelectorAll('script[data-map-engine="true"]').forEach(s => s.remove());
             window.simplemaps_countrymap = undefined;
             window.simplemaps_countrymap_mapdata = undefined;
@@ -136,11 +146,12 @@ const MapOfBatyrs = () => {
             cleanupPreviousMap();
             if (isMounted) {
                 setSelectedRegionId(null);
+                setRegionData(null);
                 setError(null);
             }
 
-            let mapDataObject = kzMapData;
-            let mapEngineFile = '/kz-countrymap.js';
+            let mapDataObject;
+            let mapEngineFile;
 
             if (theme === 'ru') {
                 mapDataObject = ruMapData;
@@ -148,13 +159,17 @@ const MapOfBatyrs = () => {
             } else if (theme === 'en') {
                 mapDataObject = enMapData;
                 mapEngineFile = '/en-countrymap.js';
+            } else { // 'kz' по умолчанию
+                mapDataObject = kzMapData;
+                mapEngineFile = '/kz-countrymap.js';
             }
 
             try {
                 window.simplemaps_countrymap_mapdata = mapDataObject;
                 await loadEngineScript(mapEngineFile);
-                if (!isMounted) return;
-                window.handleMapClick = handleRegionClick;
+                if (isMounted) {
+                    window.handleMapClick = handleRegionClick;
+                }
             } catch (err) {
                 console.error(err);
                 if (isMounted) setError(t('mapLoadError'));
@@ -163,15 +178,13 @@ const MapOfBatyrs = () => {
 
         initializeMap();
         return () => { isMounted = false; handleStopAudio(); cleanupPreviousMap(); };
-        // Этот useEffect зависит только от темы и функции клика
-    }, [theme, handleRegionClick]);
+    }, [theme, handleRegionClick, t]);
 
-    // **useEffect для обновления ЯЗЫКА на карте**
+    // useEffect для обновления ЯЗЫКА на карте (без изменений)
     useEffect(() => {
         if (!window.simplemaps_countrymap?.load || !window.simplemaps_countrymap_mapdata?.state_specific) {
             return;
         }
-
         const data = window.simplemaps_countrymap_mapdata;
         for (const stateId in data.state_specific) {
             const state = data.state_specific[stateId];
@@ -182,12 +195,10 @@ const MapOfBatyrs = () => {
             else if (i18n.language === 'en' && state.name_en) state.name = state.name_en;
             else state.name = state.original_name;
         }
-
         window.simplemaps_countrymap.load();
-        // Этот хук зависит от языка и темы (чтобы перезапуститься при смене карты)
     }, [i18n.language, theme]);
 
-    // JSX-разметка
+
     return (
         <div className={style.pageContainer}>
             <div className={style.header}>
