@@ -1,26 +1,22 @@
-// src/pages/MapPage/MapPage.tsx - ЭТОТ КОД УЖЕ ПРАВИЛЬНЫЙ
+// src/pages/MapPage/MapPage.tsx
 
-import { useState } from 'react';
 import styles from './MapPage.module.css';
-import {ThemeSelector} from "../../../service/themeSelector/themeSelector.tsx";
-import {LanguageSelector} from "../../../features/languageSelector/LanguageSelector.tsx";
+import { ThemeSelector } from "../../../service/themeSelector/themeSelector.tsx";
+import { LanguageSelector } from "../../../features/languageSelector/LanguageSelector.tsx";
 import MapOfBatyrs from "../mapOfBatyrs.tsx";
 
+// 🔄 УДАЛЯЕМ useState, ТАК КАК СОСТОЯНИЕ ТЕПЕРЬ ГЛОБАЛЬНОЕ
 export const MapPage = () => {
-    const [currentTheme, setCurrentTheme] = useState<'kz' | 'ru' | 'en'>('kz');
-
     return (
         <div className={styles.pageContainer}>
             <div className={styles.controls}>
-                <ThemeSelector
-                    selectedTheme={currentTheme}
-                    onSelectTheme={setCurrentTheme}
-                />
+                {/* 🔄 ThemeSelector теперь не требует props, он сам знает о состоянии */}
+                <ThemeSelector />
                 <LanguageSelector />
             </div>
 
-            {/* Все правильно, передаем тему как prop */}
-            <MapOfBatyrs theme={currentTheme} />
+            {/* 🔄 MapOfBatyrs тоже не требует props, он сам возьмет тему из хранилища */}
+            <MapOfBatyrs />
         </div>
     );
 };

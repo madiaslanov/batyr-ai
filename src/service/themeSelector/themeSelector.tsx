@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import styles from './themeSelector.module.css';
-import {useThemeStore} from "../../store/themeStore.ts"; // 1. Импортируем наше хранилище
+import { useThemeStore } from "../../store/themeStore.ts"; // 🔄 ВОЗВРАЩАЕМ ИМПОРТ
 
 const themeOptions = [
     { key: 'kz' as const, name: 'Батыр' },
@@ -10,9 +10,10 @@ const themeOptions = [
     { key: 'en' as const, name: 'Knight' }
 ];
 
+// 🔄 КОМПОНЕНТ БОЛЬШЕ НЕ ПРИНИМАЕТ PROPS ДЛЯ УПРАВЛЕНИЯ ТЕМОЙ
 export const ThemeSelector = () => {
-    // 2. Получаем текущую тему и функцию для ее изменения из хранилища
-    const { theme: selectedTheme, setTheme: onSelectTheme } = useThemeStore();
+    // 🔄 ПОЛУЧАЕМ ДАННЫЕ И ФУНКЦИЮ НАПРЯМУЮ ИЗ ХРАНИЛИЩА
+    const { theme: selectedTheme, setTheme } = useThemeStore();
 
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -21,7 +22,7 @@ export const ThemeSelector = () => {
     const toggleOpen = () => setIsOpen(!isOpen);
 
     const selectTheme = (key: 'kz' | 'ru' | 'en') => {
-        onSelectTheme(key); // Вызываем функцию из хранилища
+        setTheme(key); // 🔄 ВЫЗЫВАЕМ ФУНКЦИЮ ИЗ ХРАНИЛИЩА
         setIsOpen(false);
     };
 

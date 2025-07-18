@@ -4,14 +4,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from "react-i18next";
 import style from './MapOfBatyrs.module.css';
 
-// 1. УБИРАЕМ ИМПОРТ ГЛОБАЛЬНОГО ХРАНИЛИЩА
-// import { useThemeStore } from '../../store/themeStore';
-import kzMapData from '../../data/kz.ts'; // Убедитесь, что пути правильные
+import { useThemeStore } from '../../store/themeStore.ts'; // 🔄 ВОЗВРАЩАЕМ ИМПОРТ
+import kzMapData from '../../data/kz.ts';
 import ruMapData from '../../data/ru.ts';
 import enMapData from '../../data/en.ts';
 
-
-// Глобальные объявления и интерфейсы
+// ... (интерфейсы и global без изменений)
 declare global {
     interface Window {
         handleMapClick?: (regionId: string) => void;
@@ -23,18 +21,15 @@ interface Batyr { name: string; years: string; description: string; image: strin
 interface HistoricalEvent { name: string; period: string; description: string; }
 interface RegionData { region_name: string; main_text: string; batyrs: Batyr[]; historical_events: HistoricalEvent[]; }
 
-// 2. ДОБАВЛЯЕМ ИНТЕРФЕЙС ДЛЯ PROPS
-interface MapOfBatyrsProps {
-    theme: 'kz' | 'ru' | 'en';
-}
 
-// 3. КОМПОНЕНТ ТЕПЕРЬ ПРИНИМАЕТ PROPS
-const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
-    // 4. УБИРАЕМ ВЫЗОВ useThemeStore, ИСПОЛЬЗУЕМ THEME ИЗ PROPS
+// 🔄 КОМПОНЕНТ БОЛЬШЕ НЕ ПРИНИМАЕТ PROPS С ТЕМОЙ
+const MapOfBatyrs = () => {
+    // 🔄 ПОЛУЧАЕМ ТЕМУ НАПРЯМУЮ ИЗ ХРАНИЛИЩА
+    const theme = useThemeStore((state) => state.theme);
     const { t, i18n } = useTranslation();
-    const API_URL = 'https://api.batyrai.com'; // Используйте ваш URL
+    const API_URL = 'https://api.batyrai.com';
 
-    // Состояния компонента
+    // ... (остальной код компонента до return остается БЕЗ ИЗМЕНЕНИЙ, он уже написан правильно)
     const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
     const [regionData, setRegionData] = useState<RegionData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -44,7 +39,7 @@ const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [isAudioLoading, setIsAudioLoading] = useState<boolean>(false);
 
-    // Функции-обработчики (без изменений)
+
     const handleStopAudio = useCallback(() => {
         if (audioRef.current) {
             audioRef.current.pause();
@@ -89,7 +84,6 @@ const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
         }
     };
 
-    // useEffect для загрузки данных региона (логика не меняется, но зависимость от theme теперь корректна)
     useEffect(() => {
         if (!selectedRegionId) { setRegionData(null); return; }
         const fetchRegionData = async () => {
@@ -103,14 +97,14 @@ const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ description: t('mapError') }));
-                    throw new Error(errorData.description || t('mapError'));
+                    const errorData = await response.json().catch(() => ({ description: i18n.t('mapError') }));
+                    throw new Error(errorData.description || i18n.t('mapError'));
                 }
                 const data: RegionData = await response.json();
                 setRegionData(data);
                 const heroesText = data.batyrs.map(b => `${b.name}. ${b.description}`).join(' ');
                 const eventsText = data.historical_events.map(e => `${e.name}. ${e.description}`).join(' ');
-                textToReadRef.current = `${data.region_name}. ${data.main_text} ${t('mapReadBatyrs')}: ${heroesText}. ${t('mapReadEvents')}: ${eventsText}`;
+                textToReadRef.current = `${data.region_name}. ${data.main_text} ${i18n.t('mapReadBatyrs')}: ${heroesText}. ${i18n.t('mapReadEvents')}: ${eventsText}`;
             } catch (err) {
                 setError((err as Error).message);
             } finally {
@@ -118,10 +112,8 @@ const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
             }
         };
         fetchRegionData();
-    }, [selectedRegionId, i18n.language, theme, handleStopAudio, t, API_URL]);
+    }, [selectedRegionId, i18n.language, theme, handleStopAudio, i18n, API_URL]);
 
-
-    // useEffect для смены ТЕМЫ карты (без изменений)
     useEffect(() => {
         const mapContainer = document.getElementById('map');
         if (!mapContainer) return;
@@ -156,16 +148,9 @@ const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
             let mapDataObject;
             let mapEngineFile;
 
-            if (theme === 'ru') {
-                mapDataObject = ruMapData;
-                mapEngineFile = '/ru-countrymap.js';
-            } else if (theme === 'en') {
-                mapDataObject = enMapData;
-                mapEngineFile = '/en-countrymap.js';
-            } else { // 'kz' по умолчанию
-                mapDataObject = kzMapData;
-                mapEngineFile = '/kz-countrymap.js';
-            }
+            if (theme === 'ru') { mapDataObject = ruMapData; mapEngineFile = '/ru-countrymap.js'; }
+            else if (theme === 'en') { mapDataObject = enMapData; mapEngineFile = '/en-countrymap.js'; }
+            else { mapDataObject = kzMapData; mapEngineFile = '/kz-countrymap.js'; }
 
             try {
                 window.simplemaps_countrymap_mapdata = mapDataObject;
@@ -175,15 +160,14 @@ const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
                 }
             } catch (err) {
                 console.error(err);
-                if (isMounted) setError(t('mapLoadError'));
+                if (isMounted) setError(i18n.t('mapLoadError'));
             }
         };
 
         initializeMap();
         return () => { isMounted = false; handleStopAudio(); cleanupPreviousMap(); };
-    }, [theme, handleRegionClick, t]);
+    }, [theme, handleRegionClick, i18n]);
 
-    // useEffect для обновления ЯЗЫКА на карте (без изменений)
     useEffect(() => {
         if (!window.simplemaps_countrymap?.load || !window.simplemaps_countrymap_mapdata?.state_specific) {
             return;
@@ -199,10 +183,8 @@ const MapOfBatyrs = ({ theme }: MapOfBatyrsProps) => {
             else state.name = state.original_name;
         }
         window.simplemaps_countrymap.load();
-    }, [i18n.language, theme]);
+    }, [i18n.language]);
 
-
-    // JSX разметка (без изменений)
     return (
         <div className={style.pageContainer}>
             <div className={style.header}>
